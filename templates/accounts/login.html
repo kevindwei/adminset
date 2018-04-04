@@ -6,12 +6,10 @@
   <title>AdminSet Login</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    {% include 'link_css.html' %}
-    {% include 'head_script.html' %}
-    {% block self_head_css_js %}
-        <script src="/static/plugins/iCheck/icheck.min.js"></script>
-        <link rel="stylesheet" href="/static/plugins/iCheck/square/blue.css">
-    {% endblock %}
+    <link rel="stylesheet" href="/static/css/login-style.css">
+     {% include 'head_script.html' %}
+
+
 
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -21,76 +19,44 @@
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
 </head>
-<body class="hold-transition login-page">
-<div class="login-box">
-  <div class="login-logo">
-    <a href="/"><b>AdminSet</b></a>
-  </div>
-              <div class="box box-info">
-            <div class="box-header with-border">
-              <h3 class="box-title">用户认证</h3>
-            </div>
-            <!-- /.box-header -->
-            <!-- form start -->
-        <form class="form-horizontal" role="form" action="{% url "login" %}" method="POST" >              <div class="box-body">
-        {% csrf_token %}
-            {% for item in form %}
-                <div class="form-group">
-                    <label class="control-label col-md-3">{{item.label}}</label>
-                    <div class="col-md-8">
-                        {{item}}
-                    </div>
-                    <div class="col-md-offset-1 col-md-10">
-                        {{item.errors}} {{error_msg}}
-                    </div>
-                </div>
-            {% endfor %}
-              </div>
-              <!-- /.box-body -->
-              <div class="box-footer">
-                  <input type="hidden" name="next" value="{{ next }}" />
-                <button style="width: 340px;" type="submit" class="btn btn-info pull-right">登录</button>
-              </div>
-              <!-- /.box-footer -->
-            </form>
-          </div>
+<body>
 
-  <!-- /.login-logo -->
-{#  <div class="login-box-body">#}
-{#    <p class="login-box-msg"></p>#}
-{##}
-{#      <form class="form-horizontal" role="form" action="{% url "loginurl" %}" method="POST" >#}
-{#    {% csrf_token %}#}
-{##}
-{#        {% for item in form %}#}
-{#            <div class="form-group">#}
-{#                <label class="control-label col-md-3">{{item.label}}</label>#}
-{#                <div class="col-md-8">#}
-{#                    {{item}}#}
-{#                </div>#}
-{#                <div class="col-md-offset-1 col-md-10">#}
-{#                    {{item.errors}} {{error_msg}}#}
-{#                </div>#}
-{#            </div>#}
-{#        {% endfor %}#}
-{#        <div class="form-group">#}
-{#            <div class="col-md-offset-1 col-md-10">#}
-{#                <input type="hidden" name="next" value="{{ next }}" />#}
-{#                <button type="submit" class="btn btn-primary" style="width: 280px;">登 录</button>#}
-{#            <div>#}
-{#        </div>#}
-{##}
-{#    </form>#}
-{##}
-{#    <!-- /.social-auth-links -->#}
-{##}
-{#  </div>#}
-  <!-- /.login-box-body -->
+    <div id="logo">
+        <h1><i><a href="/">adminset</a></i></h1>
+    </div>
+
+    <section class="stark-login">
+        <!-- form start -->
+        <form class="form-horizontal" role="form" action="{% url "login" %}" method="POST" >
+            <div  id="fade-box">
+                 {% csrf_token %}
+            {% for item in form %}
+{#                    <label class="control-label col-md-3">{{item.label}}</label>#}
+                        {{item}}
+                        {{item.errors}} {{error_msg}}
+            {% endfor %}
+             <!-- /.box-body -->
+                <input type="hidden" name="next" value="{{ next }}" />
+                <button style="width: 340px;" type="submit" >登录</button>
+            <!-- /.box-footer -->
+
+            </div>
+        </form>
+
+        <div class="hexagons">
+            <img src="/static/giphy.gif" height="100%" width="100%"/>
+        </div>
+
+    </section>
+    <div id="circle1">
+              <div id="inner-cirlce1">
+                <h2> </h2>
+              </div>
+    </div>
+
 </div>
-<!-- /.login-box -->
 
 <!-- jQuery 2.2.3 -->
-
 <script>
   $(function () {
     $('input').iCheck({
