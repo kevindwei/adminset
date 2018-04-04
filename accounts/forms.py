@@ -59,6 +59,7 @@ class AddUserForm(forms.ModelForm):
         self.fields['nickname'].error_messages = {'required': u'请输入姓名'}
         self.fields['role'].label = u'角 色'
         self.fields['is_active'].label = u'状 态'
+        self.fields['date_joined'].label = u'加入时间'
 
     def clean_password(self):
         password = self.cleaned_data.get('password')

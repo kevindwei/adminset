@@ -12,25 +12,26 @@ from accounts.permission import permission_verify
 
 
 def login(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated():#通过django内置auth模块实现判断 session是否登录
         return HttpResponseRedirect('/')
-    if request.method == 'GET' and request.GET.has_key('next'):
+    if request.method == 'GET' and request.GET.has_key('next'):#获取想访问的页面
         next_page = request.GET['next']
     else:
         next_page = '/'
-    if next_page == "/accounts/logout/":
+    if next_page == "/accounts/logout/":#没登陆就想注销。。
         next_page = '/'
+
     if request.method == "POST":
         form = LoginUserForm(request, data=request.POST)
-        if form.is_valid():
-            auth.login(request, form.get_user())
+        if form.is_valid():#触发form的clean_password函数
+            auth.login(request, form.get_user())#get_user得到 accounts.models.UserInfo
             return HttpResponseRedirect(request.POST['next'])
     else:
         form = LoginUserForm(request)
     kwargs = {
         'request': request,
         'form':  form,
-        'next': next_page,
+        'next': next_page,#实现登录后返回想访问的页面
     }
     return render(request, 'accounts/login.html', kwargs)
 

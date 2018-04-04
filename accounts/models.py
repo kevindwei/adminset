@@ -2,6 +2,9 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
+# Create your models here.
 # Create your models here.
 
 
@@ -55,6 +58,8 @@ class UserInfo(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     nickname = models.CharField(max_length=64, null=True)
     role = models.ForeignKey(RoleList, null=True, blank=True)
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
 
     objects = UserManager()
     USERNAME_FIELD = 'username'
