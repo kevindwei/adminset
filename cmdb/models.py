@@ -74,6 +74,7 @@ class Host(models.Model):
 
 
 class Cabinet(models.Model):
+    """机柜"""
     idc = models.ForeignKey(Idc, verbose_name=u"所在机房", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(u"机柜", max_length=100)
     desc = models.CharField(u"描述", max_length=100, blank=True)
