@@ -135,6 +135,7 @@ def status(request, project_id):
 @login_required()
 @permission_verify()
 def log2(request, project_id):
+    """部署日志"""
     ret = []
     project = Delivery.objects.get(job_name_id=project_id)
     job_name = project.job_name.name

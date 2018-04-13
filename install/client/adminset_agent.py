@@ -6,7 +6,7 @@ import psutil, schedule, requests
 from subprocess import Popen, PIPE
 AGENT_VERSION = "0.20"
 token = 'HPcWR7l4NJNJ'
-server_ip = '192.168.47.130'
+server_ip = '192.168.10.156'
 
 
 def get_ip():

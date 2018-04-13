@@ -7,6 +7,7 @@ from cmdb.models import Host
 
 
 class AuthInfo(models.Model):
+    """认证信息"""
     dis_name = models.CharField(u"认证标识", max_length=50, unique=True, blank=False)
     username = models.CharField(u"用户名", max_length=50, blank=True)
     password = models.CharField(u"密码", max_length=50, blank=True)
@@ -18,6 +19,7 @@ class AuthInfo(models.Model):
 
 
 class AppOwner(models.Model):
+    """负责人信息"""
     name = models.CharField(u"负责人姓名", max_length=50, unique=True, null=False, blank=False)
     phone = models.CharField(u"负责人手机", max_length=50, null=False, blank=False)
     qq = models.CharField(u"负责人QQ", max_length=100, null=True, blank=True)
@@ -28,6 +30,7 @@ class AppOwner(models.Model):
 
 
 class Product(models.Model):
+    """产品线"""
     name = models.CharField(u"产品线名称", max_length=50, unique=True, null=False, blank=False)
     description = models.CharField(u"产品线描述", max_length=255, null=True, blank=True)
     owner = models.ForeignKey(
@@ -41,6 +44,7 @@ class Product(models.Model):
 
 
 class Project(models.Model):
+    """项目"""
     LANGUAGE_TYPES = (
         ("Java", "Java"),
         ("PHP", "PHP"),
