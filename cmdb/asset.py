@@ -33,6 +33,7 @@ def asset(request):
     asset_types = ASSET_TYPE
     asset_status = ASSET_STATUS
     idc_name = request.GET.get('idc', '')
+    # print ("idc_name,",idc_name)
     group_name = request.GET.get('group', '')
     asset_type = request.GET.get('asset_type', '')
     status = request.GET.get('status', '')

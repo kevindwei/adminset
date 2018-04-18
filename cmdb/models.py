@@ -4,6 +4,10 @@
 from __future__ import unicode_literals
 from django.db import models
 
+from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ValidationError
+from accounts.models import UserInfo
+import uuid
 
 ASSET_STATUS = (
     (str(1), u"使用中"),
@@ -22,12 +26,53 @@ ASSET_TYPE = (
     )
 
 
-class UserInfo(models.Model):
-    username = models.CharField(max_length=30,null=True)
-    password = models.CharField(max_length=30,null=True)
+
+class Credential(models.Model):
+    """认证协议，帐号密码"""
+    protocol_choices = (
+        ('ssh-password', _('ssh-password')),
+        ('ssh-key', _('ssh-key')),
+        ('vnc', _('vnc')),
+        ('rdp', _('rdp')),
+        ('telnet', _('telnet'))
+    )
+
+    dis_name = models.CharField(max_length=40, verbose_name=_('Credential name'), blank=False, unique=True)
+    username = models.CharField(max_length=40, verbose_name=_('Auth user name'), blank=False)
+    port = models.PositiveIntegerField(default=22, blank=False, verbose_name=_('Port'))
+    method = models.CharField(max_length=40, choices=(('password', _('password')), ('key', _('key'))), blank=False,
+                              default='password', verbose_name=_('Method'))
+    key = models.TextField(blank=True, verbose_name=_('Key'))
+    password = models.CharField(max_length=40, blank=True, verbose_name=_('Password'))
+    proxy = models.BooleanField(default=False, verbose_name=_('Proxy'))
+    proxyserverip = models.GenericIPAddressField(protocol='ipv4', null=True, blank=True, verbose_name=_('Proxy ip'))
+    proxyport = models.PositiveIntegerField(blank=True, null=True, verbose_name=_('Proxy port'))
+    proxypassword = models.CharField(max_length=40, verbose_name=_('Proxy password'), blank=True)
+    protocol = models.CharField(max_length=40, default='ssh-password', choices=protocol_choices,
+                                verbose_name=_('Protocol'))
+    width = models.PositiveIntegerField(verbose_name=_('width'), default=1024)
+    height = models.PositiveIntegerField(verbose_name=_('height'), default=768)
+    dpi = models.PositiveIntegerField(verbose_name=_('dpi'), default=96)
 
     def __unicode__(self):
-        return self.username
+        return self.dis_name
+
+    def clean(self):
+        if self.protocol == 'ssh-password' or self.protocol == 'ssh-key':
+            if self.method == 'password' and len(self.password) == 0:
+                raise ValidationError(_('If you choose password auth method,You must set password!'))
+            if self.method == 'password' and len(self.key) > 0:
+                raise ValidationError(_('If you choose password auth method,You must make key field for blank!'))
+            if self.method == 'key' and len(self.key) == 0:
+                raise ValidationError(_('If you choose key auth method,You must fill in key field!'))
+            if self.method == 'key' and len(self.password) > 0:
+                raise ValidationError(_('If you choose key auth method,You must make password field for blank!'))
+            if self.proxy:
+                if self.proxyserverip is None or self.proxyport is None:
+                    raise ValidationError(
+                        _('If you choose auth proxy,You must fill in proxyserverip and proxyport field !'))
+
+
 
 
 class Idc(models.Model):
@@ -68,6 +113,7 @@ class Host(models.Model):
     sn = models.CharField(u"SN号 码", max_length=60, blank=True)
     position = models.CharField(u"所在位置", max_length=100, blank=True)
     memo = models.TextField(u"备注信息", max_length=200, blank=True)
+    credential = models.ForeignKey('Credential')#一台主机有多个认证信息
 
     def __unicode__(self):
         return self.hostname
@@ -103,6 +149,7 @@ class HostGroup(models.Model):
         return self.name
 
 
+
 class IpSource(models.Model):
     net = models.CharField(max_length=30)
     subnet = models.CharField(max_length=30,null=True)
@@ -124,3 +171,19 @@ class InterFace(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+class Log(models.Model):
+    server = models.ForeignKey(Host, verbose_name=_('Server'))
+    channel = models.CharField(max_length=100, verbose_name=_('Channel name'), blank=False, unique=True, editable=False)
+    log = models.UUIDField(max_length=100, default=uuid.uuid4, verbose_name=_('Log name'), blank=False, unique=True,
+                           editable=False)
+    start_time = models.DateTimeField(auto_now_add=True, verbose_name=_('Start time'))
+    end_time = models.DateTimeField(auto_created=True, auto_now=True, verbose_name=_('End time'))
+    is_finished = models.BooleanField(default=False, verbose_name=_('Is finished'))
+    user = models.ForeignKey(UserInfo, verbose_name=_('User'))
+    width = models.PositiveIntegerField(default=90, verbose_name=_('Width'))
+    height = models.PositiveIntegerField(default=40, verbose_name=_('Height'))
+
+    def __unicode__(self):
+        return self.server.hostname

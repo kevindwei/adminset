@@ -3,7 +3,8 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from appconf.models import Project, AuthInfo
+from cmdb.models import Credential as AuthInfo
+from appconf.models import Project
 # Create your models here.
 DEPLOY_POLICY = (
     ("Direct", "Direct"),

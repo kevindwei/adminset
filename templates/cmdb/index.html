@@ -40,8 +40,7 @@
 
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
-    <section class="content-header">
-    </section>
+    <section class="content-header"></section>
 
     <!-- Main content -->
     <section class="content">
@@ -167,6 +166,7 @@
 {#用于接收asset_edit.html中layui子层的传值#}
 <input id="handle_status" value="" hidden="hidden">
 </div>
+
 <script>
   $(function () {
     $("#example1").DataTable();
@@ -231,6 +231,7 @@ function detail(n){
 </script>
 <script>
     function change_info(){
+        //更改页面信息
         var args = $("#asset_form").serialize();
         window.location = "{% url 'cmdb' %}?" + args
     }

@@ -60,11 +60,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'webterminal',
+    'channels',
+    'guacamole',
+    'elfinder',
+    'common',
+    'guardian',
+    'crispy_forms'
 ]
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -87,6 +95,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n'
             ],
         },
     },
@@ -121,6 +130,10 @@ if config.get('db', 'engine') == 'mysql':
             'PASSWORD': DB_PASSWORD,
             'HOST': DB_HOST,
             'PORT': DB_PORT,
+            'OPTIONS': {
+                'autocommit': True,
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
         }
     }
 elif config.get('db', 'engine') == 'sqlite':
@@ -180,6 +193,22 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static').replace('\\', '/'),
 )
+
+# Channels settings
+CHANNEL_LAYERS = {
+    "default": {
+       "BACKEND": "asgi_redis.RedisChannelLayer",  # use redis backend
+       "CONFIG": {
+           "hosts": [("localhost", 6379)],  # set redis address
+           "channel_capacity": {
+                                   "http.request": 1000,
+                                   "websocket.send*": 10000,
+                                },
+           "capacity": 10000,
+           },
+       "ROUTING": "webterminal.routing.channel_routing",  # load routing from our routing.py file
+       },
+}
 '''
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -195,7 +224,42 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-    )
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+    ),
 }
 
 AUTH_USER_MODEL = 'accounts.UserInfo'
+
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_URL = '/media/'
+
+LOCALE_PATHS = [
+                os.path.join(BASE_DIR,'locale')
+        ]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
+)
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+from django.conf.locale.en import formats as en_formats
+en_formats.DATETIME_FORMAT = 'Y-m-d H:i:s'
+en_formats.DATETIME_INPUT_FORMATS = 'Y-m-d H:i:s'
+
+# LANGUAGES = [
+#     ('zh-hans', _('Simple Chinese')),
+#     ('en', _('English')),
+# ]
+
+CHANNELS_WS_PROTOCOLS = ["guacamole"]
+
+# guacd daemon host address and port
+GUACD_HOST = '127.0.0.1'
+GUACD_PORT = '4822'

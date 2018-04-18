@@ -107,6 +107,7 @@ function selectAll(){
 }
 
 function getIDall() {
+    //获取所有input的values的值
     var check_array = [];
     $(".gradeX input:checked").each(function () {
         var id = $(this).attr("value");
