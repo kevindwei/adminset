@@ -236,7 +236,7 @@ AUTH_USER_MODEL = 'accounts.UserInfo'
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
-MEDIA_URL = '/media/'
+MEDIA_URL = MEDIA_ROOT+"/"
 
 LOCALE_PATHS = [
                 os.path.join(BASE_DIR,'locale')

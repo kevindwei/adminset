@@ -15,4 +15,6 @@ urlpatterns = [
     url(r'^appconf/', include('appconf.urls')),
     url(r'^delivery/', include('delivery.urls')),
     url(r'^webterminal/', include('webterminal.urls')),
+    url(r'^elfinder/', include('elfinder.urls')),
+    url(r'^guacamole/', include('guacamole.urls')),
 ]
