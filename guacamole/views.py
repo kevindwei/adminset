@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from guacamole.client import GuacamoleClient
 from django.views.generic import View
 from django.views.generic.detail import DetailView
-from adminset.settings import MEDIA_URL
+from adminset.settings import  MEDIA_URL
 from cmdb.models import Log
 from common.views import LoginRequiredMixin
 

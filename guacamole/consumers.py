@@ -18,7 +18,8 @@ except ImportError:
 from django.core.exceptions import ObjectDoesNotExist
 from cmdb.models import Host as ServerInfor,Log
 from django.utils.timezone import now
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from accounts.models import UserInfo
 from adminset.settings import MEDIA_ROOT
 import os
 
@@ -63,7 +64,7 @@ class GuacamoleWebsocket(WebsocketConsumer):
         self.message.reply_channel.send({"text":'0.,{0}.{1};'.format(len(cache_key),cache_key)},immediately=True)
        #'0.,36.83940151-b2f9-4743-b5e4-b6eb85a97743;'
        
-        audit_log = Log.objects.create(user=User.objects.get(username=self.message.user),server=data,channel=self.message.reply_channel.name,width=data.credential.width,height=data.credential.height,log=cache_key)
+        audit_log = Log.objects.create(user=UserInfo.objects.get(username=self.message.user),server=data,channel=self.message.reply_channel.name,width=data.credential.width,height=data.credential.height,log=cache_key)
         audit_log.save()
         guacamolethread=GuacamoleThread(self.message,client)
         guacamolethread.setDaemon = True

@@ -23,6 +23,7 @@
     //http://guacamole.apache.org/doc/guacamole-common-js/Guacamole.WebSocketTunnel.html
     var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     var ws_path = ws_scheme + '://' + window.location.host + '/guacamole/{{id}}/';
+    console.log(ws_path)
     var guac = new Guacamole.Client(
        // new Guacamole.HTTPTunnel("tunnel")
         new Guacamole.WebSocketTunnel(ws_path)
@@ -37,7 +38,7 @@
         console.log(error);
     };
 
-    // Connect
+    // Connect，连接后端
     guac.connect();
 
     // Disconnect on close
