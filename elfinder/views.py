@@ -12,16 +12,17 @@ from elfinder.connector import ElfinderConnector
 from elfinder.conf import settings as ls
 from django.shortcuts import render_to_response
 from django.shortcuts import get_object_or_404
-from cmdb.models import   Host as ServerInfor
+from cmdb.models import Host as ServerInfor
 import re
-from django.contrib.auth.mixins import PermissionRequiredMixin
+# from django.contrib.auth.mixins import PermissionRequiredMixin
 from common.views import LoginRequiredMixin
 
-class ElfinderConnectorView(View):
+class ElfinderConnectorView(LoginRequiredMixin,View):
     """
     Default elfinder backend view
     """
-    raise_exception = True
+    # permission_required = 'webterminal.can_filemanage_serverinfo'
+    # raise_exception = True
     
     def render_to_response(self, context, **kwargs):
         """
@@ -147,7 +148,6 @@ class ElfinderConnectorView(View):
         """
         used in get method calls
         """
-        print("*dfs***")
         u_id = str(uuid.uuid4())
         if kwargs['optionset'] == 'sftp':
             kwargs['u_id'] = u_id
