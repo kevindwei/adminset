@@ -21,7 +21,6 @@ from django.views.static import serve
 
 
 urlpatterns = [
-    url(r'^guacamole/',include('guacamole.urls')),
     url(r'^tree/$',web_views.tree_index,name='tree_index'),
     # url(r'^credentialcreate/$',web_views.CredentialCreate,name='credentialcreate'),
     # url(r'^credentiallist/$',web_views.CredentialList,name='credentiallist'),
@@ -29,11 +28,10 @@ urlpatterns = [
     # url(r'^serverlist/$',ServerlList,name='serverlist'),
     # url(r'^groupcreate/$',GroupCreate,name='groupcreate'),
     # url(r'^grouplist/$',GroupList,name='grouplist'),
-    # url(r'^sshlogslist/$',SshLogList,name='sshlogslist'),
+    url(r'^sshlogslist/$',web_views.SshLogList,name='sshlogslist'),
     url(r'^sshterminalkill/$',web_views.SshTerminalKill,name='sshterminalkill'),
     url(r'^sshlogplay/(?P<pk>[0-9]+)/',web_views.SshLogPlay,name='sshlogplay'),
     url(r'^sshterminalmonitor/(?P<pk>[0-9]+)/',web_views.SshTerminalMonitor,name='sshterminalmonitor'),
-    url(r'^elfinder/',include('elfinder.urls')),
     url(r'^i18n/', include('django.conf.urls.i18n')), 
 ]
 
