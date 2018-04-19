@@ -4,7 +4,8 @@ from accounts.permission import permission_verify
 from django.shortcuts import HttpResponse, render
 from cmdb.models import HostGroup,Log,Credential
 from webterminal.interactive import get_redis_instance
-
+from adminset.settings import MEDIA_URL
+from common.views import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 try:
     import simplejson as json
@@ -12,6 +13,7 @@ except ImportError:
     import json
 from django.http import JsonResponse
 from django.utils.timezone import now
+from django.views.generic.list import ListView
 
 
 
@@ -69,26 +71,34 @@ def CredentialCreate(request):
                                          smart_str(e))})
             render(request,'webterminal/credentialcreate.html',locals())
 
-# @login_required()
-# @permission_verify()
-# def CredentialList(request):
-#     temp_name = "cmdb/cmdb-header.html"
-#     object_list = Credential.objects.all()
-#     return render(request,'webterminal/credentiallist.html', locals())
+@login_required()
+@permission_verify()
+def SshLogList(request):
+    temp_name = "cmdb/cmdb-header.html"
+    object_list = Log.objects.all().order_by("-start_time")
+    return render(request, 'webterminal/sshlogslist.html', locals())
+
+
 
 @login_required()
 @permission_verify()
-def SshLogPlay(request):
+def SshLogPlay(request,**kwargs):
+    # print "ssh",kwargs
+    context={}
     temp_name = "cmdb/cmdb-header.html"
-    log = Log.objects.all()
+    pk = kwargs['pk']
+    objects = Log.objects.get(id=pk)
+    # print objects.__dict__
     context['logpath'] = '{0}{1}-{2}-{3}/{4}.json'.format(MEDIA_URL,objects.start_time.year,objects.start_time.month,objects.start_time.day,objects.log)
+    # context = json.dumps(context)
+    print context
     return render(request, 'webterminal/sshlogplay.html', locals())
 
 @login_required()
 @permission_verify()
 def SshTerminalMonitor(request):
     temp_name = "cmdb/cmdb-header.html"
-    log = Log.objects.all()
+    object_list = Log.objects.all()
     return render(request, 'webterminal/sshlogmonitor.html', locals())
 
 @login_required()

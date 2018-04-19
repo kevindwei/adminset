@@ -39,7 +39,7 @@ class Credential(models.Model):
 
     dis_name = models.CharField(max_length=40, verbose_name=_('Credential name'), blank=False, unique=True)
     username = models.CharField(max_length=40, verbose_name=_('Auth user name'), blank=False)
-    port = models.PositiveIntegerField(default=22, blank=False, verbose_name=_('Port'))
+    port = models.PositiveIntegerField(default=22, blank=False, verbose_name=_('Port'),help_text="默认端口提示: rdp:3389,ssh:22,vnc:5901,telnet:23")
     method = models.CharField(max_length=40, choices=(('password', _('password')), ('key', _('key'))), blank=False,
                               default='password', verbose_name=_('Method'))
     key = models.TextField(blank=True, verbose_name=_('Key'))
@@ -50,8 +50,8 @@ class Credential(models.Model):
     proxypassword = models.CharField(max_length=40, verbose_name=_('Proxy password'), blank=True)
     protocol = models.CharField(max_length=40, default='ssh-password', choices=protocol_choices,
                                 verbose_name=_('Protocol'))
-    width = models.PositiveIntegerField(verbose_name=_('width'), default=1024)
-    height = models.PositiveIntegerField(verbose_name=_('height'), default=768)
+    width = models.PositiveIntegerField(verbose_name=_('width'), default=1024,help_text="rdp:960")
+    height = models.PositiveIntegerField(verbose_name=_('height'), default=768,help_text="rdp:575")
     dpi = models.PositiveIntegerField(verbose_name=_('dpi'), default=96)
 
     def __unicode__(self):
