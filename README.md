@@ -29,7 +29,7 @@ adminset/install/server/server_install.sh<br>
 
 
 ## 客户端安装
-客户端脚本目前rhel/centos6、7,ubuntu14.04经过测试<br>
+客户端脚本目前rhel/centos6、centos7,ubuntu16.04<br>
 客户端python版本支持2.6.6及以上<br>
 说明：为保证注册IP是管理IP（后续会被ansible等调用），客户端的IP抓取目前使用主机名解析，否则报错。 
 如：主机名为cn-bj-web01 请在/etc/hosts中加入相应的解析 192.168.x.x cn-bj-web01，这样再执行adminset_agent.py 可以保证正常运行。
@@ -42,7 +42,7 @@ server_ip = '192.168.47.130'  #此项目为adminset server的IP地址<br>
 #### step2: 拷贝install/client/ 目录到客户机的任意位置并执行:
 ```
 cd client
-sh install.sh
+/bin/bash install.sh
 ```
 #### step3: 客户端管理
 ```
@@ -61,6 +61,12 @@ http://your_server_ip<br>
 功能参考，<a href="https://github.com/guohongze/adminset/wiki/AdminSet">功能预览</a><br>
 FAQ参考，<a href="https://github.com/guohongze/adminset/wiki/FAQ">常见问题</a>
 
+# adminset demo
+每2小时重置一次数据<br>
+http://115.28.147.154<br>
+用户名admin 密码Adminset123<br>
+webssh用户名密码相同<br>
+
 # 安全
 建议不要将程序启动在有公网可以直接访问的设备上，如果需要请使用VPN。<br>
 建议生产环境中使用https配置服务器<br>
@@ -69,3 +75,9 @@ FAQ参考，<a href="https://github.com/guohongze/adminset/wiki/FAQ">常见问�
 # 开发者交流
 请加入开发者群<br>
 2号群 536962005<br>
+
+# 支持adminset
+支持adminset发展，款项用于adminset社区运营，网站服务器租赁等。<br>
+<img src="https://github.com/guohongze/adminset/blob/master/static/dist/img/alipay.png" height="341" width="314"></img> 
+
+

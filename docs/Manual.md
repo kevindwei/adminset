@@ -37,17 +37,18 @@
  
         客户端正常使用需要修改脚本中的两个字段：
         token = 'HPcWR7l4NJNJ'        #token是上传到服务器的密钥可以在WEB界面的系统配置中自定义<br>
-        server_ip = '192.168.47.130'  #此项目为adminset server的IP地址<br>
+        server_ip = '192.168.47.130'  #此项目为adminset server的IP地址，支持域名<br>
 
         #### step2: 拷贝install/client/ 目录到客户机的任意位置并执行:
 
         cd client
-        sh install.sh
+        /bin/bash install.sh
 
         #### step3: 客户端管理
         
         service adminsetd start|stop|restart|status
         客户端会被默认安装在/var/opt/adminset/client/ 目录下
+        agent日志文件/var/opt/adminset/client/agent.log
         agent默认每3600秒上传一次资产和硬件信息，可以在adminset_agent.py中自定义
         注意：客户端全部功能需要配置服务器到客户端的ssh免密登录。
         
@@ -65,6 +66,7 @@
     logs 日志
     data 常用数据
     workspace 持续部署模块工作目录
+    client 为客户端目录
 
 #   站点导航用法
     在站点管理中输入常用的运维工具系统后会自动出现在站点导航界面。
@@ -197,19 +199,24 @@
     service beat {start|stop|restart}     # 任务调用
     service mongod {start|stop|restart}   # 监控数据库
     service webssh {start|stop|restart}   # web终端功能
+    service adminsetd {start|stop|restart}   # 客户端
 
 #   升级与更新
     强烈建设在升级或更新adminset之前先备份数据库，并在测试环境验证通过，因为adminset在快速的发展过程中，每版本功能与结构变化较大。
+    0.20 表结构变更较大，不兼容0.1x版本，如果升级请导出数据再导入。
     1）版本更新：
-        下载相应版本的代码到本地然后执行：
+        下载相应版本的代码到本地，建议下载到/opt/adminset，然后执行：
         chmdo +x adminset/install/server/update.sh
         adminset/install/server/update.sh
     2)二次开发
         rsync.sh脚本只做增量，rsync参数不带--delete选项，不会在生产环境删除代码中已删除的条目,不更新组件配置文件，不会生成新的ORM数据库条目。
         update.sh脚本带--delete选项，同步代码，重新发布各组件的配置文件，并重新生成ORM数据文件（makemigrations migrate）。
         update.sh 可带一个参数，参数为需要更新的应用名，如变更了appconf模块的models只更新appconf可以使用update.sh appconf来更新。
-    3) 0.20 表结构变更较大，不兼容0.1x版本，如果升级请导出数据再导入。
-
+        注意：如果做表结构变更，把新生成的{app_name}/migrations中的000X_initial.py文件提交到代码中，以保证更新时ORM配置正确。
+        
+    3) 自动化部署
+        在自动化部署软件如jenkins或adminset中，拉取代码到本地后，再用命令将其复制到更新目标机器的/opt/adminset 目录，然后执行：
+        adminset/install/server/update.sh。（这一切的前提要求已经初次安装过adminset服务端）
 # 安全
     强烈建议不要将程序启动在有公网可以直接访问的设备上，如果需要请使用VPN。
     建议生产环境中使用https配置服务器<br>
