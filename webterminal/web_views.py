@@ -81,7 +81,6 @@ def SshLogList(request):
 
 
 @login_required()
-@permission_verify()
 def SshLogPlay(request,**kwargs):
     # print "ssh",kwargs
     context={}
@@ -91,7 +90,6 @@ def SshLogPlay(request,**kwargs):
     # print objects.__dict__
     context['logpath'] = '{0}{1}-{2}-{3}/{4}.json'.format(MEDIA_URL,objects.start_time.year,objects.start_time.month,objects.start_time.day,objects.log)
     # context = json.dumps(context)
-    print context
     return render(request, 'webterminal/sshlogplay.html', locals())
 
 @login_required()
