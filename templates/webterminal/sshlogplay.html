@@ -7,7 +7,6 @@
   <link rel="stylesheet" type="text/css" href="{% static 'plugins/asciinema/asciinema-player.css' %}" />
 </head>
 <body>
-    {{context.logpath}}
   <asciinema-player src="{{context.logpath}}"></asciinema-player>
 
   <script src="{% static 'plugins/asciinema/asciinema-player.js' %}"></script>

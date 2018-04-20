@@ -22,7 +22,7 @@
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + '/monitor/' + 'monitor-' + '{{object.log}}';
         make_terminal(document.getElementById('terminal_monitor'), {rows: {{object.height}}, cols: {{object.width}}}, ws_path);
-    })
+    });
     function make_terminal(element, size, ws_url) {
         var term = new Terminal({
             cols: size.cols,
@@ -38,13 +38,13 @@
             <!--term.fit();-->
             term.resize(term.cols, term.rows);
             <!--term.on('data', function (data) {-->
-                <!--<!--console.log(data);-->-->
-                <!--ws.send(JSON.stringify(['stdin', data]));-->
-            <!--});-->
-
-            <!--term.on('title', function (title) {-->
-                <!--document.title = title;-->
-            <!--});-->
+                {#<!--<!--console.log(data);-->-->#}
+            {#    <!--ws.send(JSON.stringify(['stdin', data]));-->#}
+            {#<!--});-->#}
+            {##}
+            {#<!--term.on('title', function (title) {-->#}
+            {#    <!--document.title = title;-->#}
+            {#<!--});-->#}
 
             term.toggleFullscreen(true);
             ws.onmessage = function (event) {

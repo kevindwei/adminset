@@ -61,6 +61,7 @@
                                 <th>{%trans 'server name' %}</th>
                                 <th>{%trans 'server ip' %}</th>
                                 <th>{%trans 'start time' %}</th>
+                                <th>{%trans 'end time' %}</th>
                                 <th>{%trans 'is finished' %}</th>
                                 <th>{%trans 'action' %}</th>
                             </tr>
@@ -72,13 +73,14 @@
                                 <td>{{ element.server.hostname }}</td>
                                 <td>{{ element.server.ip }}</td>
                                 <td>{{ element.start_time }}</td>
+                                <td>{{ element.end_time }}</td>
                                 <td>{{ element.is_finished }}</td>
                                 <td data-editable="false" class="text-center pull-left">
                                     {% if element.is_finished %}
 
                                         <a class="btn btn-xs btn-primary play" onclick="play('{{element.user.username}}','{{element.server.ip}}',
                                                 '{{element.start_time}}',
-                                                '{{element.start_time}}',
+                                                '{{element.end_time}}',
                                                 {% if element.server.credential.protocol == 'ssh-password' or element.server.credential.protocol == 'ssh-key' %}
                                                     '{% url 'sshlogplay' element.id %}'
                                                 {% else %}
@@ -182,13 +184,16 @@
         },
         callback: function (result) {
             if (result){
+                $.ajaxSetup({
+                    data:{csrfmiddlewaretoken:'{{ csrf_token }}'}
+                });
                 $.ajax({
                     type: "POST",
                     url: '{% url 'sshterminalkill' %}',
                     dataType: "json",
                     data: {'channel_name':channel_name},
                     success: function (data) {
-                    
+                        console.log(data)
                         if (data['status']){
                             toastr["success"](data['message']);
                             setTimeout(function () {
