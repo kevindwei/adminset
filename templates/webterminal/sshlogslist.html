@@ -147,7 +147,7 @@
         var div_ip = ' {% trans 'server' %}: '+'<span class="text-info">' + ip + '</span>';
         var div_time = ' {% trans 'start time' %}: ' + '<span class="text-info">'+start_time +'</span>' + ' {% trans 'end time' %}: ' +'<span class="text-info">' + end_time + '</span>';
         var title = div_username + div_ip + div_time;
-        {#console.log(url)#}
+        console.log(url)
         if (url.indexOf("guacamole") >= 0){
             var size=BootstrapDialog.SIZE_WIDE;
             var cssclass='play-dialog';

@@ -107,12 +107,7 @@ WSGI_APPLICATION = 'adminset.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
+
 
 
 DATABASES = {}
@@ -236,7 +231,7 @@ AUTH_USER_MODEL = 'accounts.UserInfo'
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
-MEDIA_URL = MEDIA_ROOT+"/"
+MEDIA_URL = '/media/'
 
 LOCALE_PATHS = [
                 os.path.join(BASE_DIR,'locale')
