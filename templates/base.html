@@ -13,19 +13,38 @@ scratch. This page gets rid of all links and provides the needed markup only.
     {% include 'link_css.html' %}
     {% include 'head_script.html' %}
     {% block self_head_css_js %} {% endblock %}
+
 <script>
     $(document).ready(function(){
-    $('.loading').fadeOut();
-});
+        $('.loading').fadeOut();
+    });
+
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-center",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
 </script>
 </head>
+
 <body class="hold-transition skin-yellow-light sidebar-mini">
 <div class="loading"></div>
 <div class="wrapper">
 
-  <!-- Main Header -->
-
   {% include temp_name %}
+
 <script type="text/javascript">
     $('.loading').animate({'width':'10%'},50);  //第一个进度节点
 </script>
