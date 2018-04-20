@@ -198,6 +198,7 @@ class SshTerminalMonitor(WebsocketConsumer):
     def connect(self, message,channel):
         self.message.reply_channel.send({"accept": True})     
         #permission auth
+        # print(self.message.reply_channel.name,channel)
         Group(channel).add(self.message.reply_channel.name)
 
     def disconnect(self, message,channel):

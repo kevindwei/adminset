@@ -8,7 +8,7 @@ from guacamole.consumers import GuacamoleWebsocket
 # class itself specifies what channels it wants to consume)
 channel_routing = [
     route_class(webterminal,path = r'^/ws'),
-    route_class(CommandExecute,path= r'^/execute'),
+    # route_class(CommandExecute,path= r'^/execute'),
     route_class(SshTerminalMonitor,path= r'^/monitor/(?P<channel>\w+-\w+-\w+-\w+-\w+-\w+)'),
     route_class(GuacamoleWebsocket,path = r'^/guacamole/(?P<id>[0-9]+)/'),
 ]

@@ -14,6 +14,7 @@ except ImportError:
 from django.http import JsonResponse
 from django.utils.timezone import now
 from django.views.generic.list import ListView
+from django.views.generic import View
 
 
 
@@ -94,18 +95,38 @@ def SshLogPlay(request,**kwargs):
 
 @login_required()
 @permission_verify()
-def SshTerminalMonitor(request):
-    temp_name = "cmdb/cmdb-header.html"
-    object_list = Log.objects.all()
+def SshTerminalMonitor(request,**kwargs):
+    pk = kwargs['pk']
+    object = Log.objects.get(id=pk)
     return render(request, 'webterminal/sshlogmonitor.html', locals())
 
-@login_required()
-@permission_verify()
-def SshTerminalKill(request):
-    if request.method == "POST":
+# @login_required()
+# @permission_verify()
+# def SshTerminalKill(request):
+#     if request.method == "POST":
+#         if request.is_ajax():
+#             channel_name = request.POST.get('channel_name', None)
+#             # print(channel_name)
+#             try:
+#                 data = Log.objects.get(channel=channel_name)
+#                 if data.is_finished:
+#                     return JsonResponse({'status': False, 'message': 'Ssh terminal does not exist!'})
+#                 else:
+#                     data.end_time = now()
+#                     data.is_finished = True
+#                     data.save()
+#
+#                     queue = get_redis_instance()
+#                     redis_channel = queue.pubsub()
+#                     queue.publish(channel_name, json.dumps(['close']))
+#                     return JsonResponse({'status': True, 'message': 'Terminal has been killed !'})
+#             except ObjectDoesNotExist:
+#                 return JsonResponse({'status': False, 'message': 'Request object does not exist!'})
+
+class SshTerminalKill(LoginRequiredMixin, View):
+    def post(self, request):
         if request.is_ajax():
             channel_name = request.POST.get('channel_name', None)
-            print(channel_name)
             try:
                 data = Log.objects.get(channel=channel_name)
                 if data.is_finished:
@@ -118,6 +139,7 @@ def SshTerminalKill(request):
                     queue = get_redis_instance()
                     redis_channel = queue.pubsub()
                     queue.publish(channel_name, json.dumps(['close']))
+
                     return JsonResponse({'status': True, 'message': 'Terminal has been killed !'})
             except ObjectDoesNotExist:
                 return JsonResponse({'status': False, 'message': 'Request object does not exist!'})

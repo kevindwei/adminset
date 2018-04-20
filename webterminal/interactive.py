@@ -118,7 +118,7 @@ def posix_shell(chan,channel,log_name=None,width=90,height=40):
                 },
             'stdout':list(map(lambda frame: [round(frame[0], 6), frame[1]], stdout))
             }
-        print log_name,"finaly"
+        # print log_name,"finaly"
         mkdir_p('/'.join(os.path.join(MEDIA_ROOT,log_name).rsplit('/')[0:-1]))#创建log目录
         with open(os.path.join(MEDIA_ROOT,log_name), "a") as f:
             f.write(json.dumps(attrs, ensure_ascii=True,cls=CustomeFloatEncoder,indent=2))#操作写进本地目录
