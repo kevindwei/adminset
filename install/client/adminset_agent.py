@@ -262,10 +262,10 @@ def get_pid():
         pid_file.writelines(pid)
 
 if __name__ == "__main__":
-    get_pid()
-    asset_info_post()
+    get_pid()#pid写操作
+    asset_info_post()#上存数据到cmdb，实现资产自动上报
     time.sleep(1)
-    agg_sys_info()
+    agg_sys_info()#Get the system infos from host,监控
     schedule.every(3600).seconds.do(run_threaded, asset_info_post)
     schedule.every(300).seconds.do(run_threaded, agg_sys_info)
     while True:

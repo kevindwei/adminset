@@ -113,7 +113,7 @@ class Host(models.Model):
     sn = models.CharField(u"SN号 码", max_length=60, blank=True)
     position = models.CharField(u"所在位置", max_length=100, blank=True)
     memo = models.TextField(u"备注信息", max_length=200, blank=True)
-    credential = models.ForeignKey('Credential')#一台主机有多个认证信息
+    credential = models.ForeignKey('Credential',null=True, blank=True)#一台主机有多个认证信息
 
     def __unicode__(self):
         return self.hostname
