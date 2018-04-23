@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 class GetSysData(object):
-    collection = get_dir("mongodb_collection")
+    collection = get_dir("mongodb_collection") #adminset.conf collection表
 
     def __init__(self, hostname, monitor_item, timing, no=0):
         self.hostname = hostname
@@ -33,10 +33,13 @@ class GetSysData(object):
 
     def get_data(self):
         client = self.connect_db()
-        db = client[self.collection]
-        collection = db[self.hostname]
+        db = client[self.collection]#获取数据库
+        # print(db)
+        collection = db[self.hostname]#获取表名
+        # print(collection)
         now_time = int(time.time())
         find_time = now_time-self.timing
+        # print(find_time,self.monitor_item)
         cursor = collection.find({'timestamp': {'$gte': find_time}}, {self.monitor_item: 1, "timestamp": 1}).limit(self.no)
         return cursor
 
@@ -48,10 +51,13 @@ def received_sys_info(request):
         received_json_data = json.loads(request.body)
         hostname = received_json_data["hostname"]
         received_json_data['timestamp'] = int(time.time())
-        client = GetSysData.connect_db()
-        db = client[GetSysData.collection]
+        client = GetSysData.connect_db() #MongoClient
+        db = client[GetSysData.collection]#connect db
+        # print(db)
         collection = db[hostname]
+        # print(collection)
         collection.insert_one(received_json_data)
+        # print received_json_data
         return HttpResponse("Post the system Monitor Data successfully!")
     else:
         return HttpResponse("Your push have errors, Please Check your data!")

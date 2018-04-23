@@ -24,7 +24,9 @@ def get_cpu(request, hostname, timing):
     cpu_percent = []
     range_time = TIME_SECTOR[int(timing)]
     cpu_data = GetSysData(hostname, "cpu", range_time)
+    # print (cpu_data)
     for doc in cpu_data.get_data():
+        # print (doc)
         unix_time = doc['timestamp']
         times = time.localtime(unix_time)
         dt = time.strftime("%m%d-%H:%M", times)
@@ -32,6 +34,7 @@ def get_cpu(request, hostname, timing):
         c_percent = doc['cpu']['percent']
         cpu_percent.append(c_percent)
     data = {"data_time": data_time, "cpu_percent": cpu_percent}
+    # print(data)
     return HttpResponse(json.dumps(data))
 
 
@@ -126,6 +129,7 @@ def host_info(request, hostname, timing):
         p = len(n["net"])
         for x in range(p):
             nic_len.append(x)
+    # print(locals())
     return render(request, "monitor/host_info_{}.html".format(timing), locals())
 
 
