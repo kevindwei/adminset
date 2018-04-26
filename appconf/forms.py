@@ -3,7 +3,8 @@
 
 from django import forms
 from django.forms.widgets import *
-from .models import Product, Project, AppOwner, AuthInfo
+from .models import Product, Project, AppOwner
+from cmdb.models import Credential as AuthInfo
 
 
 class AuthInfoForm(forms.ModelForm):

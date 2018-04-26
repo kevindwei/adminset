@@ -1,55 +1,32 @@
 #!/usr/bin/env python
 # coding=utf-8
-
-import os
+import os, re, platform, socket, time, json, threading
+import psutil, schedule, requests
 from subprocess import Popen, PIPE
-import re
-import platform
-import socket
-import time
-import json
-import threading
-
+import logging
+AGENT_VERSION = "0.23"
 token = 'HPcWR7l4NJNJ'
-server_ip = '192.168.47.130'
+server_ip = '192.168.10.156'
 
-try:
-    import psutil
-except ImportError as msg:
-    print(msg)
-    print("----------------------------------------------")
-    print("begining install psutil module, please waiting")
-    p = Popen('pip install psutil==5.2.2', stdout=PIPE, shell=True)
-    stdout, stderr = p.communicate()
-    print stdout
-    import psutil
 
-try:
-    import schedule
-except ImportError as msg:
-    print msg
-    print("------------------------------------------------")
-    print("begining install schedule module, please waiting")
-    p = Popen('pip install schedule==0.4.3', stdout=PIPE, shell=True)
-    stdout, stderr = p.communicate()
-    print stdout
-    import schedule
+def log(log_name, path=None):
+    logging.basicConfig(level=logging.INFO,
+                format='%(asctime)s %(levelname)s %(message)s',
+                datefmt='%Y%m%d %H:%M:%S',
+                filename=path+log_name,
+                filemode='ab+')
+    return logging.basicConfig
 
-try:
-    import requests
-except ImportError as msg:
-    print msg
-    print("------------------------------------------------")
-    print("begining install schedule module, please waiting")
-    p = Popen('pip install requests==2.17.3', stdout=PIPE, shell=True)
-    stdout, stderr = p.communicate()
-    print stdout
-    import requests
+log("agent.log", "/var/opt/adminset/client/")
 
 
 def get_ip():
-    hostname = socket.getfqdn(socket.gethostname())
-    ipaddr = socket.gethostbyname(hostname)
+    try:
+        hostname = socket.getfqdn(socket.gethostname())
+        ipaddr = socket.gethostbyname(hostname)
+    except Exception as msg:
+        print(msg)
+        ipaddr = ''
     return ipaddr
 
 
@@ -107,56 +84,33 @@ def parser_cpu(stdout):
 
 
 def get_disk_info():
-    ret = {}
-    disk_dev = re.compile(r'Disk\s/dev/[a-z]*')
-    disk_name = re.compile(r'/dev/[a-z]*')
-    pcmd = Popen(['fdisk', '-l'], shell=False,stdout=PIPE)
-    stdout, stderr = pcmd.communicate()
+    ret = []
+    cmd = "fdisk -l|egrep '^Disk\s/dev/[a-z]+:\s\w*'"
+    p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    stdout, stderr = p.communicate()
     for i in stdout.split('\n'):
-        disk = re.match(disk_dev,i)
-        if disk:
-            dk = re.search(disk_name, disk.group()).group()
-            n = Popen('smartctl -i %s' % dk, shell=True, stdout=PIPE)
-            p = n.communicate()
-            ret[dk] = p
+        disk_info = i.split(",")
+        if disk_info[0]:
+            ret.append(disk_info[0])
     return ret
-
-
-def parser_disk_info(diskdata):
-    pd = {}
-    disknum = diskdata.keys()
-    device_model = re.compile(r'(Device Model):(\s+.*)')
-    serial_number = re.compile(r'(Serial Number):(\s+[\d\w]{1,30})')
-    firmware_version = re.compile(r'(Firmware Version):(\s+[\w]{1,20})')
-    user_capacity = re.compile(r'(User Capacity):(\s+[\d,]{1,50})')
-    for num in disknum:
-        t = str(diskdata[num])
-        for line in t.split('\n'):
-            user = re.search(user_capacity,line)
-            if user:
-                diskvo = user.groups()[1].strip()
-                nums = int(diskvo.replace(',',''))
-                endnum = str(nums/1000/1000/1000)
-                pd[num] = endnum
-    return json.dumps(pd)
 
 
 def post_data(url, data):
     try:
         r = requests.post(url, data)
         if r.text:
-            print r.text
+            logging.info(r.text)
         else:
-            print("Server return http status code: {0}".format(r.status_code))
-    except StandardError as msg:
-        print msg
+            logging.info("Server return http status code: {0}".format(r.status_code))
+    except Exception as msg:
+        logging.info(msg)
     return True
 
 
 def asset_info():
     data_info = dict()
     data_info['memory'] = get_mem_total()
-    data_info['disk'] = parser_disk_info(get_disk_info())
+    data_info['disk'] = str(get_disk_info())
     cpuinfo = parser_cpu(get_cpu_model())
     cpucore = get_cpu_cores()
     data_info['cpu_num'] = cpucore['logical']
@@ -169,17 +123,22 @@ def asset_info():
     data_info['osver'] = platform.linux_distribution()[0] + " " + platform.linux_distribution()[1] + " " + platform.machine()
     data_info['hostname'] = platform.node()
     data_info['token'] = token
+    data_info['agent_version'] = AGENT_VERSION
     return json.dumps(data_info)
 
 
 def asset_info_post():
-    osenv = os.environ["LANG"]
-    os.environ["LANG"] = "us_EN.UTF8"
-    print 'Get the hardwave infos from host:'
-    print asset_info()
-    print '----------------------------------------------------------'
+    pversion = platform.python_version()
+    pv = re.search(r'2.6', pversion)
+    if not pv:
+        osenv = os.environ["LANG"]
+        os.environ["LANG"] = "us_EN.UTF8"
+    logging.info('Get the hardwave infos from host:')
+    logging.info(asset_info())
+    logging.info('----------------------------------------------------------')
     post_data("http://{0}/cmdb/collect".format(server_ip), asset_info())
-    os.environ["LANG"] = osenv
+    if not pv:
+        os.environ["LANG"] = osenv
     return True
 
 
@@ -277,18 +236,17 @@ def get_net_info():
 
 def agg_sys_info():
 
-    print 'Get the system infos from host:'
-    sys_info = dict()
-    sys_info['hostname'] = platform.node()
-    sys_info['cpu'] = get_sys_cpu()
-    sys_info['mem'] = get_sys_mem()
-    sys_info['disk'] = get_sys_disk()
-    sys_info['net'] = get_net_info()
-    sys_info['token'] = token
+    logging.info('Get the system infos from host:')
+    sys_info = {'hostname': platform.node(),
+                'cpu': get_sys_cpu(),
+                'mem': get_sys_mem(),
+                'disk': get_sys_disk(),
+                'net': get_net_info(),
+                'token': token}
 
-    print sys_info
+    logging.info(sys_info)
     json_data = json.dumps(sys_info)
-    print '----------------------------------------------------------'
+    logging.info('----------------------------------------------------------')
     post_data("http://{0}/monitor/received/sys/info/".format(server_ip), json_data)
     return True
 
@@ -297,14 +255,19 @@ def run_threaded(job_func):
     job_thread = threading.Thread(target=job_func)
     job_thread.start()
 
+def get_pid():
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    pid = str(os.getpid())
+    with open(BASE_DIR+"/adminsetd.pid", "wb+") as pid_file:
+        pid_file.writelines(pid)
 
 if __name__ == "__main__":
-
-    asset_info_post()
+    get_pid()#pid写操作
+    asset_info_post()#上存数据到cmdb，实现资产自动上报
     time.sleep(1)
-    agg_sys_info()
-    schedule.every(1800).seconds.do(run_threaded, asset_info_post)
-    schedule.every(60).seconds.do(run_threaded, agg_sys_info)
+    agg_sys_info()#Get the system infos from host,监控
+    schedule.every(3600).seconds.do(run_threaded, asset_info_post)
+    schedule.every(300).seconds.do(run_threaded, agg_sys_info)
     while True:
         schedule.run_pending()
         time.sleep(1)

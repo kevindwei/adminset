@@ -1,0 +1,469 @@
+{% extends 'base.html'%}
+{%load i18n%}
+{#{% block title %}{% trans 'webterminal' %}{% endblock %}#}
+{% load staticfiles %}
+
+{% block self_head_css_js %}
+    <link rel="stylesheet" href="{% static 'plugins/xterm/xterm.css' %}"/>
+    <link rel="stylesheet" href="{% static 'plugins/jstree/themes/proton/style.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="http://apps.bdimg.com/libs/jqueryui/1.9.2/themes/smoothness/jquery-ui.css">
+    <!-- elFinder CSS (REQUIRED) -->
+    <link rel="stylesheet" type="text/css" href="{% static "plugins/elfinder/css/elfinder.min.css"%}">
+{% endblock %}
+
+{% block content %}
+
+    <script>
+        window.onload=init;
+        function init() {
+            var box = document.getElementById("cmdb");
+            box.className="active";
+            var box = document.getElementById("tree_index");
+            box.className="active";//切换标签
+        }
+    </script>
+
+    <div class="content-wrapper">
+        <div class="row ">
+            <div class="col-md-3">
+            <div class="portlet box box-success"  style="overflow:scroll;height: 600px;">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <a class="text-danger">{% trans 'Server List' %}</a>
+                    </div>
+                    <div class="tools">
+                        <a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+                        <a href="#portlet-config" data-toggle="modal" class="config" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="reload" data-original-title="" title=""> </a>
+                        <a href="javascript:;" class="remove" data-original-title="" title=""> </a>
+                    </div>
+                </div>
+
+                <div class="portlet-body">
+                    <form id="search">
+                        <input type="search" id="q" placeholder="{% trans 'search' %}"/>
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </form>
+                    <div id="server_list" class="tree-demo" role="tree"></div>
+                </div>
+
+            </div>
+        </div>
+            <div class="col-md-9">
+
+            <div class="span2 leftMenu">
+                <ul class="nav nav-tabs marginBottom" id="myTab">
+                    <li class="active ">
+                        <a href="#help" class="backgroundRed">{% trans 'help info' %}<button class="close closeTab" type="button" >×</button></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-content span4">
+                <div class="tab-pane active" id="help">{% trans 'help info--------' %}</div>
+            </div>
+
+        </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block self_footer_js %}
+<script src="{% static 'plugins/xterm/xterm.js' %}"></script>
+<script src="{% static 'plugins/xterm/addons/fit/fit.js' %}"></script>
+<script src="{% static 'plugins/xterm/addons/terminado/terminado.js' %}"></script>
+<script src="{% static 'plugins/xterm/addons/fullscreen/fullscreen.js' %}"></script>
+<script src="{% static 'plugins/jstree/jstree.js' %}"></script>
+<script src="{% static "plugins/jquery-ui/jquery-ui.js"%}"></script>
+<!-- elFinder JS (REQUIRED) -->
+<script src="{% static "plugins/elfinder/js/elfinder.min.js"%}"></script>
+<script type="text/javascript" src="{% static 'plugins/guacamole/all.min.js' %}"></script>
+
+<script type="application/javascript">
+
+    var currentTab;
+    var composeCount = 0;
+    //initilize tabs
+    $(function () {
+        //when every tab is clicked， this method will be call
+        $("#myTab").on("click", "a", function (e) {
+            e.preventDefault();//规定阻止哪个事件的默认动作
+
+            $(this).tab('show');//显示tab
+            $currentTab = $(this);
+        });
+
+        //registerComposeButtonEvent();
+        registerCloseEvent();
+    });
+
+
+    //this method will register event on close icon on the tab..
+    function registerCloseEvent() {
+
+        $(".closeTab").click(function () {
+
+            //there are multiple elements which has .closeTab icon so close the tab whose close icon is clicked
+            var tabContentId = $(this).parent().attr("href");//
+            $(this).parent().parent().remove(); //remove li of tab
+            $('#myTab a:last').tab('show'); // Select first tab
+            $.ajaxSetup({
+                data:{csrfmiddlewaretoken:'{{ csrf_token }}'}
+                });
+            $.ajax({
+                type: "POST",
+                url: '{% url 'sshterminalkill' %}',
+                dataType: "json",
+                data: {'channel_name':$(tabContentId).attr('channel_name')},//发送频道名字到后端
+                success: function (data) {
+
+                    if (data['status']){
+                            toastr["success"](data['message']);
+                    }
+                },
+                failure: function (errMsg) {
+                    toastr["error"](errMsg);
+                },
+            });
+            $(tabContentId).remove(); //remove respective tab content
+        });
+    }
+
+    //shows the tab with passed content div id..paramter tabid indicates the div where the content resides
+    function showTab(tabId) {
+        {#console.log('#myTab a[href="#' + tabId + '"]');#}
+        $('#myTab a[href="#' + tabId + '"]').tab('show');
+    }
+
+    //return current active tab
+    function getCurrentTab() {
+        return currentTab;
+    }
+
+    //this will return element from current tab
+    //example : if there are two tabs having  textarea with same id or same class name then when $("#someId") whill return both the text area from both tabs
+    //to take care this situation we need get the element from current tab.
+    function getElement(selector) {
+        var tabContentId = $currentTab.attr("href");
+        return $("" + tabContentId).find("" + selector);
+
+    }
+
+    function removeCurrentTab() {
+        var tabContentId = $currentTab.attr("href");
+        $currentTab.parent().remove(); //remove li of tab
+        $('#myTab a:last').tab('show'); // Select first tab
+        $(tabContentId).remove(); //remove respective tab content
+    }
+
+</script>
+
+<script type="application/javascript">
+    function make_terminal(element, size, ws_url,ip) {
+        var term = new Terminal({
+            cols: size.cols,
+            rows: size.rows,
+            screenKeys: true,
+            useStyle: true,
+            cursorBlink: true,  // Blink the terminal's cursor
+        });
+        console.log(element,size,ws_url,ip)
+        term.open(element, false);
+        var ws = new WebSocket(ws_url);
+        ws.onopen = function (event) {
+            //set terminal width and height
+            term.fit();
+            <!--ws.send(JSON.stringify(["set_size", size.rows, size.cols,-->
+                <!--term.cols, term.rows]));-->
+            term.resize(term.cols, term.rows);
+            ws.send(JSON.stringify(["ip", ip,term.cols, term.rows]));
+            term.on('data', function (data) {
+                <!--console.log(data);-->
+                ws.send(JSON.stringify(['stdin', data]));
+            });
+
+            term.on('title', function (title) {
+                document.title = title;
+            });
+
+            term.toggleFullscreen(true);
+            ws.onmessage = function (event) {
+                json_msg = JSON.parse(event.data);
+                switch (json_msg[0]) {
+                    case "stdout":
+                        term.write(json_msg[1]);
+                        break;
+                    case "disconnect":
+                        term.write("{% trans '\r\n\r\n[Finished...]\r\n' %}");
+                        break;
+                    case "channel_name":
+                        <!--console.log(json_msg[1]);-->
+                        var channel_name_attribute = document.createAttribute('channel_name')
+                        channel_name_attribute.value = json_msg[1];
+                        element.setAttributeNode(channel_name_attribute)
+                        break;
+                }
+            };
+        };
+        return {socket: ws, term: term};
+    }
+
+    {#var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";#}
+    {#var ws_path = ws_scheme + '://' + window.location.host + '/ws/';#}
+
+    //make_terminal(document.getElementById('terminal-container1'), {rows: 40, cols: 90}, ws_path);
+//    var term = new Terminal({
+//        cols: 90,
+//        rows: 40,
+//        screenKeys: true,
+//        useStyle: true,
+//        cursorBlink: true,  // Blink the terminal's cursor
+//    });
+//    term.open(document.getElementById('terminal-container1'), false);
+//    term.write('\033[1;3;31mThis is the webterminal console Please select a server to connect!\033[0m')
+</script>
+
+<script type="application/javascript">
+    //jstree实现
+    $("#server_list").jstree({
+        core: {
+            'themes': {
+                'name': 'proton',
+                'responsive': true
+            },
+            check_callback: !0,
+            data: [
+            {% for server_group in server_groups%}
+                {
+                    text: "{{ server_group.name }}",
+                    children: [
+                        {% for server in server_group.serverList.all %}
+                        {text: "{{ server.hostname }}", icon: "fa fa-server", ip: "{{ server.ip }}", state: {selected: !0},hostname:"{{ server.hostname }}",protocol: "{{ server.credential.protocol }}",id:"{{server.id}}"},
+                        {% endfor %}
+                    ]
+                },
+            {% endfor %}
+            ]
+        },
+        types: {
+            "default": {icon: "fa fa-folder icon-state-warning icon-lg"},
+            file: {icon: "fa fa-file icon-state-warning icon-lg"}
+        },
+        state: {key: "demo2"},
+        plugins: ["contextmenu", "state", "types", "search"],
+        contextmenu: {
+            "items": function ($node) {//$node选中的的tree节点
+                var tree = $("#server_list").jstree(true);
+                return {
+                    "connect": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "{% trans 'connect' %}",
+                        "action": function (obj) {
+
+                            var tabId = $node.text; //this is id on tab content div
+                            //get server ip
+                            var ip = $node.original.ip;
+                            var id = $node.original.id;
+                            var protocol = $node.original.protocol;
+                            console.log(ip,id,protocol,tabId)
+                            if (protocol == "ssh-password" || protocol == "ssh-key"){
+                                if ($("#"+tabId).length <= 0){
+                                    $('.nav-tabs').append('<li><a href="#' + tabId + '"><button class="close closeTab" type="button" >×</button>' + tabId + '</a></li>');
+                                    $('.tab-content').append('<div class="tab-pane responsive" id="' + tabId + '"></div>');
+                                    showTab(tabId);//切换tab
+                                    registerCloseEvent();//绑定关闭按钮
+                                    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+                                    var ws_path = ws_scheme + '://' + window.location.host + '/ws/';
+                                    {#console.log(ws_path)#}
+                                    make_terminal(document.getElementById(tabId), {rows: 28, cols: 90}, ws_path, ip);//制作终端,默认显示的rows数,填太多会超出页面
+                                }else {
+                                    showTab(tabId);
+                                }
+                            }else{//非ssh协议,通过嵌套实现guacamole
+                                if ($("#"+tabId).length <= 0){
+                                    $('.nav-tabs').append('<li><a href="#' + tabId + '"><button class="close closeTab" type="button" >×</button>' + tabId + '</a></li>');
+                                    {#<!-- $('.tab-content').append('<div class="tab-pane responsive" id="' + tabId + '"></div>');-->#}
+                                    $('.tab-content').append('<div class="tab-pane responsive" id="' +tabId + '"><iframe src="/guacamole/' + id +'/" frameborder="0" scrolling="no" onload="this.height=580;this.width=1030;this.contentWindow.focus();" onmouseover="this.contentWindow.focus();"></iframe>'+ '</div>');
+                                    showTab(tabId);
+                                    registerCloseEvent();
+                                    <!--var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";-->
+                                    {#<!--var ws_path = ws_scheme + '://' + window.location.host + '/guacamole/'+id+"/";-->#}
+                                    <!--connect_guacamole(document.getElementById(tabId),ws_path);-->
+                                }else {
+                                    showTab(tabId);
+                                }
+                            }
+
+                        }
+                    },
+
+                    "disconnect": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "{% trans 'disconnect' %}",
+                        "action": function (obj) {
+//                            console.log($node);
+                            var protocol = $node.original.protocol;
+                            if (protocol == "ssh-password" || protocol == "ssh-key") {
+                                if ($("#"+$node.text).length >0){
+                                    $.ajax({
+                                        type: "POST",
+                                        url: '{% url 'sshterminalkill' %}',
+                                        dataType: "json",
+                                        data: {'channel_name':$("#"+$node.text).attr('channel_name')},
+                                        success: function (data) {
+
+                                            if (data['status']){
+                                                toastr["success"](data['message']);
+                                            }
+                                        },
+                                        failure: function (errMsg) {
+                                            toastr["error"](errMsg);
+                                        },
+                                    });
+                                }
+                            }else {
+                                toastr["error"]("{% trans 'This function hasn\'t finished!' %}");
+                            };
+
+                        }
+                    },
+
+                    "file_manager": {
+                        "separator_before": false,
+                        "separator_after": false,
+                        "label": "{% trans 'file manager' %}",
+                        "action": function (obj) {
+                            var tabId = $node.text; //this is id on tab content div where the
+                            //get server ip
+                            var ip = $node.original.ip;
+                            var protocol = $node.original.protocol;
+                            if (protocol == "ssh-password" || protocol == "ssh-key") {
+                                if ($("#"+tabId + "_file_manager").length <= 0){
+                                    $('.nav-tabs').append('<li><a href="#' + tabId + "_file_manager" + '"><button class="close closeTab" type="button" >×</button>' + tabId + ' file manager' + '</a></li>');
+                                    $('.tab-content').append('<div class="tab-pane responsive" id="' + tabId + '_file_manager' + '"></div>');
+                                    showTab(tabId+'_file_manager');
+                                    registerCloseEvent();
+                                    file_manager(tabId,$node.original.hostname);
+                                }else {
+                                    showTab(tabId+'_file_manager');
+
+                                }
+                            } else {
+                                toastr["error"]("{% trans 'This function hasn\'t finished!' %}");
+                            }
+                        }
+                    },
+//                    "Create": {
+//                        "separator_before": false,
+//                        "separator_after": false,
+//                        "label": "Create",
+//                        "action": function (obj) {
+//                            $node = tree.create_node($node);
+//                            tree.edit($node);
+//                        }
+//                    },
+//                        "Remove": {
+//                            "separator_before": false,
+//                            "separator_after": false,
+//                            "label": "delete",
+//                            "action": function (obj) {
+//                                tree.delete_node($node);
+//                            }
+//                        },
+                };
+            }
+        }
+    }).on('show_contextmenu.jstree', function(e, reference, element) {
+        if ( reference.node.parents.length < 2 ) {
+            $('.vakata-context').remove();
+        }
+    });
+
+    //搜索
+    $("#search").submit(function(e) {
+        e.preventDefault();
+        $("#server_list").jstree(true).search($("#q").val());
+    });
+
+    function file_manager(tabId,hostname) {
+                var loct = window.location.search,
+                    full_lng, locm, lng;
+                    // detect language
+                if (loct && (locm = loct.match(/lang=([a-zA-Z_-]+)/))) {
+                        full_lng = locm[1];
+                } else {
+                        full_lng = (navigator.browserLanguage || navigator.language || navigator.userLanguage);
+                }
+                lng = full_lng.substr(0,2);
+                if (lng == 'ja') lng = 'jp';
+                else if (lng == 'pt') lng = 'pt_BR';
+                else if (lng == 'zh') lng = (full_lng.substr(0,5) == 'zh-tw')? 'zh_TW' : 'zh_CN';
+
+                $('#'+tabId+'_file_manager').elfinder({
+                        resizable: false,
+                        height: '80%',
+                        url : '/elfinder/yawd-connector/sftp/'+hostname+'/', // connector URL (REQUIRED)
+                        lang: lng,                   // language (OPTIONAL)
+                        <!--uploadMaxChunkSize: 124445261824,-->
+                        soundPath: "{% static '/elfinder/sounds' %}",
+                        baseUrl : "{% static 'elfinder/' %}",
+                    });
+
+            }
+
+</script>
+
+<script type="application/javascript">
+    {#function connect_guacamole(element,ws_path){#}
+    {#    // Get display div from document#}
+    {#    var display = element;#}
+    {##}
+    {#    // Instantiate client, using an HTTP tunnel for communications.#}
+    {#    //http://guacamole.apache.org/doc/guacamole-common-js/Guacamole.WebSocketTunnel.html#}
+    {#    var guac = new Guacamole.Client(#}
+    {#       // new Guacamole.HTTPTunnel("tunnel")#}
+    {#        new Guacamole.WebSocketTunnel(ws_path)#}
+    {#    );#}
+    {##}
+    {#    // Add client to display div#}
+    {#    display.appendChild(guac.getDisplay().getElement());#}
+    {##}
+    {#    // Error handler#}
+    {#    guac.onerror = function(error) {#}
+    {#        <!--alert(error);-->#}
+    {#        console.log(error);#}
+    {#    };#}
+    {##}
+    {#    // Connect#}
+    {#    guac.connect();#}
+    {##}
+    {#    // Disconnect on close#}
+    {#    window.onunload = function() {#}
+    {#        guac.disconnect();#}
+    {#    }#}
+    {##}
+    {#    // Mouse#}
+    {#    var mouse = new Guacamole.Mouse(guac.getDisplay().getElement());#}
+    {##}
+    {#    mouse.onmousedown =#}
+    {#    mouse.onmouseup   =#}
+    {#    mouse.onmousemove = function(mouseState) {#}
+    {#        guac.sendMouseState(mouseState);#}
+    {#    };#}
+    {##}
+    {#    // Keyboard#}
+    {#    var keyboard = new Guacamole.Keyboard(document);#}
+    {##}
+    {#    keyboard.onkeydown = function (keysym) {#}
+    {#        guac.sendKeyEvent(1, keysym);#}
+    {#    };#}
+    {##}
+    {#    keyboard.onkeyup = function (keysym) {#}
+    {#        guac.sendKeyEvent(0, keysym);#}
+    {#    };#}
+    {#}#}
+</script>
+{% endblock %}

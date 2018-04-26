@@ -21,9 +21,11 @@
                 <form action="{% url 'authinfo_add_mini' %}" method="post">
             {% endif %}
         {% endif %}
+
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交">&nbsp;&nbsp;&nbsp;&nbsp;
+
         {% if page_type == "whole" %}
             <a href="{% url 'authinfo_list' %}"><li style="width: 60pt" class="btn btn-primary" value="">返回</li></a><br>
         {% endif %}

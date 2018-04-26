@@ -16,6 +16,7 @@ def permission_verify():
     """
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
+            # print args, kwargs
             iUser = UserInfo.objects.get(username=request.user)
             # 判断用户如果是超级管理员则具有所有权限
             if not iUser.is_superuser:

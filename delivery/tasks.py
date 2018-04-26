@@ -13,12 +13,13 @@ import sh
 
 @shared_task
 def deploy(job_name, server_list, app_path, source_address, project_id, auth_info):
+    """真正的部署函数"""
     cmd = ""
     p1 = Delivery.objects.get(job_name_id=project_id)
     job_workspace = "/var/opt/adminset/workspace/{0}/".format(job_name)
     log_path = job_workspace + 'logs/'
     log_name = 'deploy-' + str(p1.deploy_num) + ".log"
-    with open(log_path + log_name, 'wb+') as f:
+    with open(log_path + log_name, 'wb+') as f: #部署日志开始
         f.writelines("<h4>Deploying project {0} for {1}th</h4>".format(job_name, p1.deploy_num))
     if not app_path.endswith("/"):
         app_path += "/"
@@ -29,39 +30,39 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
     sleep(1)
     if p1.build_clean or p1.version:
         try:
-            shutil.rmtree("{0}code/".format(job_workspace))
-        except StandardError as msg:
+            shutil.rmtree("{0}code/".format(job_workspace)) #递归删除code目录以及目录内的所有内容
+        except Exception as msg:
             print("code dir is not exists, build clean over")
     if p1.job_name.source_type == "git":
         cmd = git_clone(job_workspace, auth_info, source_address, p1)
     if p1.job_name.source_type == "svn":
         cmd = svn_clone(job_workspace, auth_info, source_address, p1)
-    data = cmd_exec(cmd)
+    data = cmd_exec(cmd) #把最新的包下载下来
     p1.bar_data = 30
     p1.save()
     with open(log_path + log_name, 'ab+') as f:
         f.writelines(cmd)
         f.writelines(data)
-    if p1.shell:
+    if p1.shell:#需要执行脚本的，在堡垒机创建好对应目录
         deploy_shell = job_workspace + 'scripts/deploy-' + str(p1.deploy_num) + ".sh"
         deploy_shell_name = 'deploy-' + str(p1.deploy_num) + ".sh"
         with open(deploy_shell, 'wb+') as f:
             f.writelines(p1.shell)
-        cmd = "/usr/bin/dos2unix {}".format(deploy_shell)
+        cmd = "/usr/bin/dos2unix {}".format(deploy_shell)#转成unix格式
         data = cmd_exec(cmd)
     for server in server_list:
         cmd = "rsync --progress -raz --delete --exclude '.git' --exclude '.svn' {0}/code/ {1}:{2}".format(
-                job_workspace, server, app_path)
+                job_workspace, server, app_path)#分发代码或包到对端服务器
         data = cmd_exec(cmd)
         with open(log_path + log_name, 'ab+') as f:
             f.writelines(cmd)
             f.writelines(data)
-        if p1.shell and not p1.shell_position:
-            cmd = "scp {0} {1}:/tmp".format(deploy_shell, server)
+        if p1.shell and not p1.shell_position:  #远端执行shell脚本
+            cmd = "scp {0} {1}:/tmp".format(deploy_shell, server)  #脚本复制到目标机器 /tmp
             data = cmd_exec(cmd)
             with open(log_path + log_name, 'ab+') as f:
                 f.writelines(data)
-            cmd = "ssh {1} '/usr/bin/bash /tmp/{0}'".format(deploy_shell_name, server)
+            cmd = "ssh {1} '/usr/bin/bash /tmp/{0}'".format(deploy_shell_name, server)  #执行脚本
             data = cmd_exec(cmd)
             with open(log_path + log_name, 'ab+') as f:
                 f.writelines(data)
@@ -69,7 +70,7 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
             cur_bar = p1.bar_data
             p1.bar_data = cur_bar+5
             p1.save()
-    if p1.shell and p1.shell_position:
+    if p1.shell and p1.shell_position: #堡垒机本地执行shell脚本
         # cmd = "/usr/bin/bash {0}'".format(deploy_shell)
         data = sh.bash(deploy_shell)
         with open(log_path + log_name, 'ab+') as f:
@@ -129,10 +130,10 @@ def svn_clone(job_workspace, auth_info, source_address, p1):
         if not source_address.endswith("/") and not p1.version.endswith('/'):
             source_address += '/'
         source_address += p1.version
-    if os.path.exists("{0}code/.svn".format(job_workspace)):
+    if os.path.exists("{0}code/.svn".format(job_workspace)): #存在就更新
         cmd = "svn --non-interactive --trust-server-cert --username {2} --password {3} update {0} {1}code/".format(
                 source_address, job_workspace, auth_info["username"], auth_info["password"])
-    else:
+    else: #no就checkout
         cmd = "svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}code/".format(
                 source_address, job_workspace, auth_info["username"], auth_info["password"])
     return cmd

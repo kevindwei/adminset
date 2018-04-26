@@ -33,21 +33,25 @@
                使用自己在安装过程中创建的super admin用户名密码
     二、客户端安装
         说明：为保证注册IP是管理IP（后续会被ansible等调用），客户端的IP抓取目前使用主机名解析，否则报错。 如：主机名为cn-bj-web01 请在/etc/hosts中加入相应的解析 192.168.x.x cn-bj-web01，这样再执行adminset_agent.py 可以保证正常运行。 centos7不进行解析也可获取主机IP.
-        step1:安装依赖
-        拷贝adminset/install/client/client_install.sh 到客户机上并执行:
-        sh client_install.sh
-
-        step2:执行agent
-        拷贝adminset/install/client/adminset_agent.py 到客户机上并执行：
-        python adminset_agent.py
-        后台运行请参考：
-        nohup python adminset_agent.py &
-        agent默认每1800秒上传一次资产和硬件信息，可以在adminset_agent.py中自定义
-        
-        注意：客户端全部功能需要配置服务器到客户端的ssh免密登录。
+        #### step1: 修改文件install/client/adminset_agent.py :
+ 
         客户端正常使用需要修改脚本中的两个字段：
-        token = 'HPcWR7l4NJNJ' token是上传到服务器的密钥可以在WEB界面的系统配置中自定义
-        server_ip = '192.168.47.130' 此项目为adminset server的IP地址
+        token = 'HPcWR7l4NJNJ'        #token是上传到服务器的密钥可以在WEB界面的系统配置中自定义<br>
+        server_ip = '192.168.47.130'  #此项目为adminset server的IP地址，支持域名<br>
+
+        #### step2: 拷贝install/client/ 目录到客户机的任意位置并执行:
+
+        cd client
+        /bin/bash install.sh
+
+        #### step3: 客户端管理
+        
+        service adminsetd start|stop|restart|status
+        客户端会被默认安装在/var/opt/adminset/client/ 目录下
+        agent日志文件/var/opt/adminset/client/agent.log
+        agent默认每3600秒上传一次资产和硬件信息，可以在adminset_agent.py中自定义
+        注意：客户端全部功能需要配置服务器到客户端的ssh免密登录。
+        
     三、自动免密钥登陆
         如果实现全自动ssh免密登入客户机需要如下几个条件：
         1）客户机的所有密码都相同。
@@ -62,16 +66,23 @@
     logs 日志
     data 常用数据
     workspace 持续部署模块工作目录
+    client 为客户端目录
 
 #   站点导航用法
     在站点管理中输入常用的运维工具系统后会自动出现在站点导航界面。
 
 #   资产管理用法
     一、资产管理
-        表关系为主机管理关联IDC管理，每个主机选择一相对应的IDC。
-        表关系为主机管理关联组管理，每个主机选择一相对应的组。
-        组的作用在于任务编排模块的功能在调用组时的依据，比如ansible管理目标机器以组为单为时。
-        组与主机的设置是一对多，意义是对于硬件组的管理，而非逻辑业务组。
+        主机表(host)：
+            每个主机选择一相对应的机房。
+        机架表(cabinet)：
+            一个机柜包含多个主机。
+        机房表(idc)：
+            一个机房包含多个机柜。
+        属组表(group):
+            每个主机可以属于不同的组，多对多关系。
+            组的作用在于任务编排模块的功能在调用组时的依据，比如ansible管理目标机器以组为单为时。
+            组与主机的设置是多对多，属于逻辑组。
         install/client/adminset_agent.py 开启后会自动上报主机相关信息到CMDB
         获取主机信息
         http://your_server_ip/cmdb/get/host/?token=your_token&name=host_name
@@ -188,18 +199,24 @@
     service beat {start|stop|restart}     # 任务调用
     service mongod {start|stop|restart}   # 监控数据库
     service webssh {start|stop|restart}   # web终端功能
+    service adminsetd {start|stop|restart}   # 客户端
 
 #   升级与更新
     强烈建设在升级或更新adminset之前先备份数据库，并在测试环境验证通过，因为adminset在快速的发展过程中，每版本功能与结构变化较大。
+    0.20 表结构变更较大，不兼容0.1x版本，如果升级请导出数据再导入。
     1）版本更新：
-        下载相应版本的代码到本地然后执行：
+        下载相应版本的代码到本地，建议下载到/opt/adminset，然后执行：
         chmdo +x adminset/install/server/update.sh
         adminset/install/server/update.sh
     2)二次开发
         rsync.sh脚本只做增量，rsync参数不带--delete选项，不会在生产环境删除代码中已删除的条目,不更新组件配置文件，不会生成新的ORM数据库条目。
         update.sh脚本带--delete选项，同步代码，重新发布各组件的配置文件，并重新生成ORM数据文件（makemigrations migrate）。
-        update.sh 可带一个参数，参数为需要更新的应用名，如变更了appconf模块的models只更新appconf可以使用update.sh appconf来更新
-
+        update.sh 可带一个参数，参数为需要更新的应用名，如变更了appconf模块的models只更新appconf可以使用update.sh appconf来更新。
+        注意：如果做表结构变更，把新生成的{app_name}/migrations中的000X_initial.py文件提交到代码中，以保证更新时ORM配置正确。
+        
+    3) 自动化部署
+        在自动化部署软件如jenkins或adminset中，拉取代码到本地后，再用命令将其复制到更新目标机器的/opt/adminset 目录，然后执行：
+        adminset/install/server/update.sh。（这一切的前提要求已经初次安装过adminset服务端）
 # 安全
     强烈建议不要将程序启动在有公网可以直接访问的设备上，如果需要请使用VPN。
     建议生产环境中使用https配置服务器<br>
@@ -208,4 +225,4 @@
     adminset设计初衷为超级管理员工具集成平台，所以后台权限都使用超管权限，如果生产环境中不符合安全要求，需要自定义各后台权限调用。
 
 # 开发者交流
-  QQ群：427794947
+  QQ群：536962005

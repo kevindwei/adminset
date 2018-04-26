@@ -7,25 +7,44 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>AdminSet</title>
+  <title>AdminSet Make Ops Simple</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     {% include 'link_css.html' %}
     {% include 'head_script.html' %}
     {% block self_head_css_js %} {% endblock %}
+
 <script>
     $(document).ready(function(){
-    $('.loading').fadeOut();
-});
+        $('.loading').fadeOut();
+    });
+
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-center",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
 </script>
 </head>
+
 <body class="hold-transition skin-yellow-light sidebar-mini">
 <div class="loading"></div>
 <div class="wrapper">
 
-  <!-- Main Header -->
-
   {% include temp_name %}
+
 <script type="text/javascript">
     $('.loading').animate({'width':'10%'},50);  //第一个进度节点
 </script>
@@ -47,7 +66,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     $('.loading').animate({'width':'100%'},50);  //第一个进度节点
 </script>
   <!-- Control Sidebar -->
-  {% include 'control-sidebar.html' %}
+{#  {% include 'control-sidebar.html' %}#}
 
   <!-- /.control-sidebar -->
   <!-- Add the sidebar's background. This div must be placed

@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
 
 from django.db import models
+
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
+# Create your models here.
 # Create your models here.
 
 
@@ -14,12 +20,15 @@ class PermissionList(models.Model):
 
 
 class RoleList(models.Model):
+    """url权限组"""
     name = models.CharField(max_length=64)
     # permission = models.ManyToManyField(PermissionList, null=True, blank=True)
     permission = models.ManyToManyField(PermissionList, blank=True)
 
     def __unicode__(self):
         return self.name
+
+
 
 
 class UserManager(BaseUserManager):
@@ -55,6 +64,8 @@ class UserInfo(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     nickname = models.CharField(max_length=64, null=True)
     role = models.ForeignKey(RoleList, null=True, blank=True)
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
 
     objects = UserManager()
     USERNAME_FIELD = 'username'
@@ -80,3 +91,4 @@ class UserInfo(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_superuser
+

@@ -23,7 +23,7 @@ cd $cur_dir/vendor/WebSSH2
 /usr/bin/npm config set registry http://registry.cnpmjs.org
 /usr/bin/npm install --production
 /usr/bin/npm install forever -g
-
+cd $adminset_dir
 if [ $1 ]
 then
     python manage.py makemigrations $1

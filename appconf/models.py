@@ -6,18 +6,20 @@ from django.db import models
 from cmdb.models import Host
 
 
-class AuthInfo(models.Model):
-    dis_name = models.CharField(u"认证标识", max_length=50, unique=True, blank=False)
-    username = models.CharField(u"用户名", max_length=50, blank=True)
-    password = models.CharField(u"密码", max_length=50, blank=True)
-    private_key = models.CharField(u"密钥", max_length=100, blank=True)
-    memo = models.TextField(u"备注信息", max_length=200, blank=True)
-
-    def __unicode__(self):
-        return self.dis_name
+# class AuthInfo(models.Model):
+#     """认证信息"""
+#     dis_name = models.CharField(u"认证标识", max_length=50, unique=True, blank=False)
+#     username = models.CharField(u"用户名", max_length=50, blank=True)
+#     password = models.CharField(u"密码", max_length=50, blank=True)
+#     private_key = models.CharField(u"密钥", max_length=100, blank=True)
+#     memo = models.TextField(u"备注信息", max_length=200, blank=True)
+#
+#     def __unicode__(self):
+#         return self.dis_name
 
 
 class AppOwner(models.Model):
+    """负责人信息"""
     name = models.CharField(u"负责人姓名", max_length=50, unique=True, null=False, blank=False)
     phone = models.CharField(u"负责人手机", max_length=50, null=False, blank=False)
     qq = models.CharField(u"负责人QQ", max_length=100, null=True, blank=True)
@@ -28,6 +30,7 @@ class AppOwner(models.Model):
 
 
 class Product(models.Model):
+    """产品线"""
     name = models.CharField(u"产品线名称", max_length=50, unique=True, null=False, blank=False)
     description = models.CharField(u"产品线描述", max_length=255, null=True, blank=True)
     owner = models.ForeignKey(
@@ -41,6 +44,7 @@ class Product(models.Model):
 
 
 class Project(models.Model):
+    """项目"""
     LANGUAGE_TYPES = (
         ("Java", "Java"),
         ("PHP", "PHP"),
@@ -90,14 +94,14 @@ class Project(models.Model):
     )
 
     name = models.CharField(u"项目名称", max_length=50, unique=True, null=False, blank=False)
-    description = models.CharField(u"项目描述", max_length=255, null=True, blank=True)
+    description = models.CharField(u"部署描述", max_length=1024, null=True, blank=True)
     language_type = models.CharField(u"语言类型", choices=LANGUAGE_TYPES, max_length=30, null=True, blank=True)
     app_type = models.CharField(u"程序类型", choices=APP_TYPE, max_length=30, null=True, blank=True)
     server_type = models.CharField(u"服务器类型", choices=SERVER_TYPE, max_length=30, null=True, blank=True)
     app_arch = models.CharField(u"程序框架", choices=APP_ARCH, max_length=30, null=True, blank=True)
     source_type = models.CharField(max_length=255, choices=SOURCE_TYPE, verbose_name=u"源类型", blank=True)
     source_address = models.CharField(max_length=255, verbose_name=u"源地址", null=True, blank=True)
-    appPath = models.CharField(u"程序部署路径", max_length=255, null=True, blank=True)
+    appPath = models.CharField(u"程序部署路径(目标机器)", max_length=255, null=True, blank=True)
     configPath = models.CharField(u"配置文件路径", max_length=255, null=True, blank=True)
     product = models.ForeignKey(
             Product,
