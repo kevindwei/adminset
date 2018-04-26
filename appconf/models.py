@@ -94,14 +94,14 @@ class Project(models.Model):
     )
 
     name = models.CharField(u"项目名称", max_length=50, unique=True, null=False, blank=False)
-    description = models.CharField(u"项目描述", max_length=255, null=True, blank=True)
+    description = models.CharField(u"部署描述", max_length=1024, null=True, blank=True)
     language_type = models.CharField(u"语言类型", choices=LANGUAGE_TYPES, max_length=30, null=True, blank=True)
     app_type = models.CharField(u"程序类型", choices=APP_TYPE, max_length=30, null=True, blank=True)
     server_type = models.CharField(u"服务器类型", choices=SERVER_TYPE, max_length=30, null=True, blank=True)
     app_arch = models.CharField(u"程序框架", choices=APP_ARCH, max_length=30, null=True, blank=True)
     source_type = models.CharField(max_length=255, choices=SOURCE_TYPE, verbose_name=u"源类型", blank=True)
     source_address = models.CharField(max_length=255, verbose_name=u"源地址", null=True, blank=True)
-    appPath = models.CharField(u"程序部署路径", max_length=255, null=True, blank=True)
+    appPath = models.CharField(u"程序部署路径(目标机器)", max_length=255, null=True, blank=True)
     configPath = models.CharField(u"配置文件路径", max_length=255, null=True, blank=True)
     product = models.ForeignKey(
             Product,
