@@ -126,8 +126,8 @@ chmod +x $config_dir/celery/start_celery.sh
 systemctl daemon-reload
 chkconfig celery on
 chkconfig beat on
-/bin/systemctl start celery.service
-/bin/systemctl start beat.service
+service celery start
+service beat start
 
 # 安装nginx
 echo "####install nginx####"
@@ -170,8 +170,8 @@ systemctl daemon-reload
 service redis restart
 service mariadb restart
 #service adminset restart
-/bin/systemctl restart celery.service
-/bin/systemctl restart beat.service
+service celery restart
+service beat restart
 service mongod restart
 service sshd restart
 #service webssh restart
