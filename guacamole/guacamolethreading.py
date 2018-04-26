@@ -7,7 +7,7 @@ except ImportError:
 import time
 
 def get_redis_instance():
-    from webterminal.asgi import channel_layer
+    from adminset.asgi import channel_layer
     return channel_layer._connection_list[0]
 import ast
 import logging
@@ -46,7 +46,7 @@ class GuacamoleThread(threading.Thread):
                 #if isinstance(data,(list,tuple)):
                     #if data[0] == 'close':
                         #self.stop()
-        from webterminal.asgi import channel_layer
+        from adminset.asgi import channel_layer
         with self.read_lock:
             #self.pending_read_request.clear()
 
