@@ -99,7 +99,7 @@ def config_save(request):
         config.set('db', 'database', database)
         config.add_section('token')
         config.set('token', 'token', token)
-        config.set('token', 'ssh_pwd', token)
+        config.set('token', 'ssh_pwd', ssh_pwd)
         config.add_section('log')
         config.set('log', 'log_path', log_path)
         config.set('log', 'log_level', log_level)
