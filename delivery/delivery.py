@@ -86,8 +86,9 @@ def delivery_edit(request, project_id):
 @login_required
 @permission_verify()
 def delivery_deploy(request, project_id):
+    """部署"""
     server_list = []
-    project = Delivery.objects.get(job_name_id=project_id)
+    project = Delivery.objects.get(job_name_id=project_id)   # ps: 这里的project是delivery的models
     project.bar_data = 10
     job_name = project.job_name.name
     source_address = project.job_name.source_address
@@ -110,7 +111,7 @@ def delivery_deploy(request, project_id):
         server_ip = str(server.ip)
         server_list.append(server_ip)
     project.bar_data = 15
-    deploy.delay(job_name, server_list, app_path, source_address, project_id, auth_info)
+    deploy.delay(job_name, server_list, app_path, source_address, project_id, auth_info)  #celery异步实现
     return HttpResponse("ok")
 
 
