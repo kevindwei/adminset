@@ -82,6 +82,7 @@
                                     <td>
                                         <a href="#"><li onclick="return deploy(this.value);" class="btn btn-sm btn-default" value="{{ project.job_name_id }}">部署</li></a>
                                         <a href="#"><li style="list-style-type:none" class="btn btn-sm btn-default" onclick="return tanchu(this.value)" value="{{ project.job_name_id  }}">日志</li></a>
+                                        <a href="#"><li style="list-style-type:none" class="btn btn-sm btn-default" onclick="return tanchu2(this.id)" id="{{ project.job_name.description |linebreaksbr  }}">描述</li></a>
                                         <a href="{% url "delivery_edit" project.id %}"><span class="btn btn-sm btn-default">编辑</span></a>
                                         <a href="#"><li onclick="return taskstop(this.value);" class="btn btn-sm btn-default" value="{{ project.job_name_id }}">清理</li></a>
                                         <a href="{% url "delivery_del"%}?project_id={{ project.id }}" onclick="return confirm('确认删除项目吗？')"><span class="btn btn-sm btn-danger ">删除</span></a>
@@ -141,6 +142,17 @@ function tanchu(n){
     area: ['600px', '400px'],
     shadeClose: true, //点击遮罩关闭
     content: ['/delivery/log/' + n]
+  });
+}
+function tanchu2(n2){
+    console.log(n2)
+    layer.open({
+    type: 1,
+    title: 'description',
+    closeBtn: 1,
+    area: ['600px', '400px'],
+    shadeClose: true, //点击遮罩关闭
+    content: n2
   });
 }
 </script>
