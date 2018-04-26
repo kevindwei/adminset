@@ -34,7 +34,7 @@ fi
 # 安装依赖
 #echo "####install depandencies####"
 #yum install -y epel-release
-#yum install -y gcc expect python-pip python-devel ansible smartmontools dmidecode libselinux-python git rsync dos2unix
+#yum install -y gcc expect python-pip python-devel ansible smartmontools dmidecode libselinux-python git rsync dos2unix mysql-devel
 
 # build webssh
 #echo "build webssh"
@@ -86,6 +86,7 @@ fi
 #[install]
 #trusted-host=mirrors.aliyun.com
 #EOF
+#pip install --upgrade pip
 #pip install kombu==4.1.0
 #pip install celery==4.0.2
 #pip install billiard==3.5.0.3
@@ -111,8 +112,8 @@ fi
 #安装redis
 #echo "####install redis####"
 #yum install redis -y
-#chkconfig redis on
-#service redis start
+chkconfig redis on
+service redis start
 
 # 安装celery
 echo "####install celery####"
@@ -125,8 +126,8 @@ chmod +x $config_dir/celery/start_celery.sh
 systemctl daemon-reload
 chkconfig celery on
 chkconfig beat on
-service celery start
-service beat start
+/bin/systemctl start celery.service
+/bin/systemctl start beat.service
 
 # 安装nginx
 echo "####install nginx####"
@@ -147,17 +148,34 @@ else
 fi
 scp $adminset_dir/install/server/ssh/config ~/.ssh/config
 
+#编译安装Guacamole guacd服务端
+rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+yum clean all
+yum install epel-release -y
+yum install -y freerdp-plugins gcc gnu-free-mono-fonts pv libjpeg-devel freerdp-devel libssh2-devel libvorbis-devel libwebp-devel pulseaudio-libs-devel libvncserver-devel libssh-devel pango-devel ffmpeg ffmpeg-devel openssl-devel dialog libtelnet-devel wget cairo-devel libpng-devel uuid-devel
+yum localinstall http://sourceforge.net/projects/libjpeg-turbo/files/libjpeg-turbo-official-1.5.2.x86_64.rpm -y
+ln -vfs /opt/libjpeg-turbo/include/* /usr/include/
+ln -vfs /opt/libjpeg-turbo/lib??/* /usr/lib64/
+cd /tmp
+wget http://sourceforge.net/projects/guacamole/files/current/source/guacamole-server-0.9.14.tar.gz
+tar -xvpf guacamole-server-0.9.14.tar.gz
+cd guacamole-server-0.9.14
+./configure --with-init-dir=/etc/init.d
+make && make install
+
 # 完成安装
 echo "##############install finished###################"
 systemctl daemon-reload
 service redis restart
 service mariadb restart
 #service adminset restart
-service celery restart
-service beat restart
+/bin/systemctl restart celery.service
+/bin/systemctl restart beat.service
 service mongod restart
 service sshd restart
 #service webssh restart
+guacd service start guacd
 echo "please access website http://server_ip"
 echo "you have installed adminset successfully!!!"
 echo "################################################"
