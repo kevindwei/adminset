@@ -36,7 +36,7 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
     if p1.job_name.source_type == "git":
         cmd = git_clone(job_workspace, auth_info, source_address, p1)
     if p1.job_name.source_type == "svn":
-        cmd = svn_clone(job_workspace, auth_info, source_address, p1)
+        cmd = svn_clone(job_workspace, auth_info, source_address, p1,log_path,log_name)
     data = cmd_exec(cmd) #把最新的包下载下来
     p1.bar_data = 30
     p1.save()
@@ -125,15 +125,27 @@ def git_clone(job_workspace, auth_info, source_address, p1):
     return cmd
 
 
-def svn_clone(job_workspace, auth_info, source_address, p1):
+def svn_clone(job_workspace, auth_info, source_address, p1,log_path,log_name):
+    """实现包裹部署"""
     if p1.version:
         if not source_address.endswith("/") and not p1.version.endswith('/'):
             source_address += '/'
         source_address += p1.version
-    if os.path.exists("{0}code/.svn".format(job_workspace)): #存在就更新
-        cmd = "svn --non-interactive --trust-server-cert --username {2} --password {3} update {0} {1}code/".format(
+        # job_version_workspace = "{0}/code/{1}/".format(job_workspace,p1.version)
+        # os.system("mkdir -p {0}".format(job_version_workspace))#创建 jobname/1.1/ 目录
+
+    if os.path.exists("{0}code/.svn".format(job_workspace)): #存在就更新,
+        cmd = "svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}".format(
                 source_address, job_workspace, auth_info["username"], auth_info["password"])
     else: #no就checkout
-        cmd = "svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}code/".format(
+        cmd_0 ='sed -i  "s@# store-plaintext-passwords = no@store-plaintext-passwords = yes@g"  /root/.subversion/servers'
+        cmd_1 ='sed -i  "s@# store-passwords = no@store-passwords = yes@g"  /root/.subversion/servers'
+        data_0 = cmd_exec(cmd_0)#修改svn ，在命令行连接时允许填充密码
+        with open(log_path + log_name, 'ab+') as f:
+            f.writelines(data_0)
+        data_1 = cmd_exec(cmd_1)
+        with open(log_path + log_name, 'ab+') as f:
+            f.writelines(data_1)
+        cmd = "echo p | svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}".format(
                 source_address, job_workspace, auth_info["username"], auth_info["password"])
     return cmd
