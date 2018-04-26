@@ -168,7 +168,7 @@
             useStyle: true,
             cursorBlink: true,  // Blink the terminal's cursor
         });
-        {#console.log(element,size,ws_url,ip)#}
+        console.log(element,size,ws_url,ip)
         term.open(element, false);
         var ws = new WebSocket(ws_url);
         ws.onopen = function (event) {
