@@ -169,7 +169,7 @@ echo "##############install finished###################"
 systemctl daemon-reload
 service redis restart
 service mariadb restart
-#service adminset restart
+service adminset restart
 service celery restart
 service beat restart
 service mongod restart
