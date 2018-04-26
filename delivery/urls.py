@@ -6,7 +6,7 @@ import tasks
 urlpatterns = [
     url(r'^$', delivery.delivery_list, name='delivery'),
     url(r'^add/$', delivery.delivery_add, name='delivery_add'),
-    url(r'^ist/$', delivery.delivery_list, name='delivery_list'),
+    url(r'^list/$', delivery.delivery_list, name='delivery_list'),
     url(r'^status/(?P<project_id>\d+)/$', delivery.status, name='delivery_status'),
     url(r'^edit/(?P<project_id>\d+)/$', delivery.delivery_edit, name='delivery_edit'),
     url(r'^log/(?P<project_id>\d+)/$', delivery.log, name='delivery_log'),
