@@ -1,0 +1,15 @@
+[Unit]
+Description=adminset
+After=network.target
+
+[Service]
+WorkingDirectory=/var/opt/adminset/main
+ExecStart=/usr/bin/python manage.py runserver 127.0.0.1:8000
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+
