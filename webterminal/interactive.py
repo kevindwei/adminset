@@ -27,7 +27,7 @@ import ast
 import traceback
 
 def get_redis_instance():
-    from adminset.asgi import channel_layer    
+    from webterminal.asgi import channel_layer
     return channel_layer._connection_list[0]#获取backends数据,即是redis
 
 def mkdir_p(path):
@@ -64,7 +64,7 @@ def posix_shell(chan,channel,log_name=None,width=90,height=40):
     """实现shell的内容发送，和发送给监控组,记录日志和关闭shell
         chan:ssh的shell
     """
-    from adminset.asgi import channel_layer
+    from webterminal.asgi import channel_layer
     stdout = list()
     begin_time = time.time()
     last_write_time = {'last_activity_time':begin_time}    

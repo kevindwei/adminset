@@ -11,7 +11,7 @@ _file_name = os.path.basename(__file__)
 sys.path.insert(0, path_of_current_dir)
 
 
-worker_class = 'sync'
+worker_class = 'gevent'
 workers = multiprocessing.cpu_count() * 2 + 1
 
 chdir = path_of_current_dir

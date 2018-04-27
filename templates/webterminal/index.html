@@ -275,7 +275,7 @@
                                     showTab(tabId);//切换tab
                                     registerCloseEvent();//绑定关闭按钮
                                     var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                                    var ws_path = ws_scheme + '://' + window.location.host + '/ws/';
+                                    var ws_path = ws_scheme + '://' + window.location.host+'/ws/';
                                     {#console.log(ws_path)#}
                                     make_terminal(document.getElementById(tabId), {rows: 28, cols: 90}, ws_path, ip);//制作终端,默认显示的rows数,填太多会超出页面
                                 }else {

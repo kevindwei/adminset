@@ -31,7 +31,7 @@ class ShellHandler(object):
 
     @staticmethod
     def _print_exec_out(cmd, out_buf, err_buf, exit_status, channel_name=None ):
-        from adminset.asgi import channel_layer
+        from webterminal.asgi import channel_layer
         channel_layer.send(channel_name, {'text': json.dumps(['stdout',smart_unicode('command executed: {}'.format(cmd))])})
         print('command executed: {}'.format(cmd))
         print('STDOUT:')
