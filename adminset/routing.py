@@ -12,3 +12,4 @@ channel_routing = [
     route_class(SshTerminalMonitor,path= r'^/monitor/(?P<channel>\w+-\w+-\w+-\w+-\w+-\w+)'),
     route_class(GuacamoleWebsocket,path = r'^/guacamole/(?P<id>[0-9]+)/'),
 ]
+

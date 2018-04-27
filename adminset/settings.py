@@ -201,7 +201,7 @@ CHANNEL_LAYERS = {
                                 },
            "capacity": 10000,
            },
-       "ROUTING": "webterminal.routing.channel_routing",  # load routing from our routing.py file
+       "ROUTING": "adminset.routing.channel_routing",  # load routing from our routing.py file
        },
 }
 '''
