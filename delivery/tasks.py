@@ -134,18 +134,21 @@ def svn_clone(job_workspace, auth_info, source_address, p1,log_path,log_name):
         # job_version_workspace = "{0}/code/{1}/".format(job_workspace,p1.version)
         # os.system("mkdir -p {0}".format(job_version_workspace))#创建 jobname/1.1/ 目录
 
-    if os.path.exists("{0}code/.svn".format(job_workspace)): #存在就更新,
-        cmd = "svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}".format(
+    if os.path.exists("{0}code".format(job_workspace)): #存在就更新
+        with open(log_path + log_name, 'ab+') as f:
+            f.writelines("<h4>Svn is not first starting</h4>")
+        cmd = "echo p |svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}code/".format(
                 source_address, job_workspace, auth_info["username"], auth_info["password"])
     else: #no就checkout
         cmd_0 ='sed -i  "s@# store-plaintext-passwords = no@store-plaintext-passwords = yes@g"  /root/.subversion/servers'
         cmd_1 ='sed -i  "s@# store-passwords = no@store-passwords = yes@g"  /root/.subversion/servers'
         data_0 = cmd_exec(cmd_0)#修改svn ，在命令行连接时允许填充密码
         with open(log_path + log_name, 'ab+') as f:
-            f.writelines(data_0)
+            f.writelines(cmd_0)
         data_1 = cmd_exec(cmd_1)
         with open(log_path + log_name, 'ab+') as f:
-            f.writelines(data_1)
-        cmd = "echo p | svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}".format(
+            f.writelines(cmd_1)
+            f.writelines("<h4>Svn is first starting</h4>")
+        cmd = "echo p | svn --non-interactive --trust-server-cert --username {2} --password {3} checkout {0} {1}code/".format(
                 source_address, job_workspace, auth_info["username"], auth_info["password"])
     return cmd
