@@ -101,7 +101,7 @@ class Project(models.Model):
     app_arch = models.CharField(u"程序框架", choices=APP_ARCH, max_length=30, null=True, blank=True)
     source_type = models.CharField(max_length=255, choices=SOURCE_TYPE, verbose_name=u"源类型", blank=True)
     source_address = models.CharField(max_length=255, verbose_name=u"源地址", null=True, blank=True)
-    appPath = models.CharField(u"程序部署路径(目标机器)", max_length=255, null=True, blank=True)
+    appPath = models.CharField(u"程序部署路径(目标机器)", max_length=255, null=True, blank=True,help_text="大部分docker部署不需要填写")
     configPath = models.CharField(u"配置文件路径", max_length=255, null=True, blank=True)
     product = models.ForeignKey(
             Product,
