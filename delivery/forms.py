@@ -17,7 +17,8 @@ class DeliveryFrom(forms.ModelForm):
             'version': widgets.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
             'description': widgets.Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),
             'deploy_policy': widgets.Select(attrs={'class': 'form-control', 'style': 'width:450px;'}),
-            'shell': widgets.Textarea(attrs={'class': 'form-control', 'style': 'width:450px; height:100px'}),
+            'shell': widgets.Textarea(attrs={'class': 'form-control', 'style': 'width:750px; height:200px'}),
             'auth': widgets.Select(attrs={'class': 'form-control','style': 'width:450px;'}),
+            # 'code_or_packet_exist': widgets.Select(attrs={'class': 'form-control','style': 'width:450px;'}),
 
         }

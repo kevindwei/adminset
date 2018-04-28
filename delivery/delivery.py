@@ -111,6 +111,7 @@ def delivery_deploy(request, project_id):
         server_list.append(server_ip)
     project.bar_data = 15
     deploy.delay(job_name, server_list, app_path, source_address, project_id, auth_info)  #celery异步实现
+    # deploy(job_name, server_list, app_path, source_address, project_id, auth_info)  #
     return HttpResponse("ok")
 
 
