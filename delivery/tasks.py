@@ -21,8 +21,9 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
     log_name = 'deploy-' + str(p1.deploy_num) + ".log"
     with open(log_path + log_name, 'wb+') as f: #部署日志开始
         f.writelines("<h4>Deploying project {0} for {1}th</h4>".format(job_name, p1.deploy_num))
-    if not app_path.endswith("/"):
-        app_path += "/"
+    if app_path:
+        if not app_path.endswith("/"):
+            app_path += "/"
 
     # clean build code
     p1.bar_data = 20
@@ -37,12 +38,13 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
         cmd = git_clone(job_workspace, auth_info, source_address, p1)
     if p1.job_name.source_type == "svn":
         cmd = svn_clone(job_workspace, auth_info, source_address, p1,log_path,log_name)
-    data = cmd_exec(cmd) #把最新的包下载下来
+    if p1.code_or_packet_need:  # 需要code或包裹就下载到堡垒机
+        data = cmd_exec(cmd) #把最新的包下载下来
+        with open(log_path + log_name, 'ab+') as f:
+            f.writelines(cmd)
+            f.writelines(data)
     p1.bar_data = 30
     p1.save()
-    with open(log_path + log_name, 'ab+') as f:
-        f.writelines(cmd)
-        f.writelines(data)
     if p1.shell:#需要执行脚本的，在堡垒机创建好对应目录
         deploy_shell = job_workspace + 'scripts/deploy-' + str(p1.deploy_num) + ".sh"
         deploy_shell_name = 'deploy-' + str(p1.deploy_num) + ".sh"
@@ -51,12 +53,13 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
         cmd = "/usr/bin/dos2unix {}".format(deploy_shell)#转成unix格式
         data = cmd_exec(cmd)
     for server in server_list:
-        cmd = "rsync --progress -raz --delete --exclude '.git' --exclude '.svn' {0}/code/ {1}:{2}".format(
-                job_workspace, server, app_path)#分发代码或包到对端服务器
-        data = cmd_exec(cmd)
-        with open(log_path + log_name, 'ab+') as f:
-            f.writelines(cmd)
-            f.writelines(data)
+        if p1.code_or_packet_need:#需要code或包裹就分发代码
+            cmd = "rsync --progress -raz --delete --exclude '.git' --exclude '.svn' {0}/code/ {1}:{2}".format(
+                    job_workspace, server, app_path)#分发代码或包到对端服务器
+            data = cmd_exec(cmd)
+            with open(log_path + log_name, 'ab+') as f:
+                f.writelines(cmd)
+                f.writelines(data)
         if p1.shell and not p1.shell_position:  #远端执行shell脚本
             cmd = "scp {0} {1}:/tmp".format(deploy_shell, server)  #脚本复制到目标机器 /tmp
             data = cmd_exec(cmd)
@@ -79,7 +82,7 @@ def deploy(job_name, server_list, app_path, source_address, project_id, auth_inf
     p1.status = False
     p1.save()
     with open(log_path + log_name, 'ab+') as f:
-        f.writelines("<h4>Project {0} have deployed for {1}th </h4>".format(p1.job_name, p1.deploy_num))
+        f.writelines("<h4>SUCCESS!!  Project {0} have deployed for {1}th </h4>".format(p1.job_name, p1.deploy_num))
     return data
 
 
@@ -89,13 +92,16 @@ def cmd_exec(cmd):
     return data
 
 
-def parser_url(source_address, url_len, user_len, auth_info, url_type=None):
+def parser_url(source_address, url_len, user_len, auth_info=None, url_type=None):
+    print(auth_info,"parser_url")
     if url_type:
         new_suffix = source_address[url_len:][user_len:]
+        # print ("ture,new_suffix:",new_suffix)
         final_add = source_address[:url_len] + auth_info["username"] + ":" + auth_info["password"] + new_suffix
     else:
         new_suffix = source_address[url_len:]
-        final_add = source_address[:url_len] + auth_info["username"] + ":" + auth_info["password"] + new_suffix
+        # print ("false,new_suffix:",source_address,auth_info,new_suffix)
+        final_add = source_address[:url_len] + auth_info["username"] + ":" + auth_info["password"] + "@"+new_suffix
     return final_add
 
 
@@ -103,7 +109,8 @@ def git_clone(job_workspace, auth_info, source_address, p1):
     if os.path.exists("{0}code/.git".format(job_workspace)):
         cmd = "cd {0}code/ && git pull".format(job_workspace)
         return cmd
-    if auth_info and p1.job_name.source_address.startswith("http"):
+    if auth_info and p1.job_name.source_address.startswith("https"):
+        user_len = 0
         url_type = re.search(r'(@)', source_address)
         if url_type:
             user_len = len(auth_info["username"])
@@ -111,13 +118,13 @@ def git_clone(job_workspace, auth_info, source_address, p1):
                 url_len = 8
             else:
                 url_len = 7
-            source_address = parser_url(source_address, url_len, user_len, auth_info, url_type)
+            source_address = parser_url(source_address, url_len, user_len, auth_info=auth_info, url_type=url_type)
         else:
             if source_address.startswith("https://"):
                 url_len = 8
             else:
                 url_len = 7
-            source_address = parser_url(source_address, url_len, auth_info, url_type)
+            source_address = parser_url(source_address, url_len,user_len, auth_info=auth_info, url_type=url_type)
     if p1.version:
         cmd = "git clone -b {2} {0} {1}code/".format(source_address, job_workspace, p1.version)
     else:
