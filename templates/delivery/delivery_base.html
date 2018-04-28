@@ -37,17 +37,19 @@
         {% endif %}
         {% csrf_token %}
 {#        {{ form.as_p }}#}
-        {% for field in form %}
+{#        {% for field in form %}#}
             <div class="fieldWrapper">
-                {{ field.errors }}
-                {% if field.html_name == "auth" %}
-                    {{ field.label_tag }} {{ field }}
+                                 {{ form.as_p }}
+
+{#                {{ field.errors }}#}
+{#                {% if field.html_name == "auth" %}#}
+{#                    {{ field.label_tag }} {{ field }}#}
                     <a href="#" onclick="return popWin()"><li class="btn btn-success" ><b>添加认证</b></li></a>
-                {% else %}
-                    {{ field.label_tag }} {{ field }}
-                {% endif %}
+{#                {% else %}#}
+{#                    {{ field.label_tag }} {{ field }}#}
+{#                {% endif %}#}
             </div>
-        {% endfor %}
+{#        {% endfor %}#}
         <p></p>
         <input type="submit" class="btn btn-primary" style="width: 60pt" value="保存">&nbsp;&nbsp;&nbsp;&nbsp;
         <a href="{% url 'delivery_list' %}"><li style="width: 60pt" class="btn btn-primary" value="">返回</li></a><br>
